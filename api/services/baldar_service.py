@@ -31,13 +31,13 @@ def transform_woo_to_baldar(woo_order):
     except ValueError as e:
         raise Exception(f"Invalid date format in WooCommerce order: {str(e)}")
 
-def create_baldar_task(p_param):
+def create_baldar_task(p_param, host):
     """
     Create a task in BALDAR system.
     """
     try:
         response = requests.post(
-            "http://45.83.40.28/Baldarp/service.asmx/SaveData",
+            f"{host}/Baldarp/service.asmx/SaveData",
             data={"pParam": p_param},
             headers={'Content-Type': 'application/x-www-form-urlencoded'}
         )
