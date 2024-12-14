@@ -1,16 +1,16 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
-from api.services.lionwheel_service import create_lionwheel_task
-from api.utils.transformers import transform_woo_to_lionwheel
 
+from api.services.baldar_service import transform_woo_to_baldar, create_baldar_task
+from api.services.lionwheel_service import transform_woo_to_lionwheel, create_lionwheel_task
 
 app = Flask(__name__)
 CORS(app)
 
 @app.route('/')
 def home():
-    return 'Hello, World V4'
+    return 'Hello, World V5'
 
 
 @app.route('/api/health', methods=['GET'])
@@ -18,15 +18,25 @@ def health_check():
     return jsonify({'status': 'ok'})
 
 
-@app.route('/api/create-mahirLi-Delivery', methods=['POST'])
+@app.route('/api/create-delivery', methods=['POST'])
 def create_task():
     try:
         woo_order = request.get_json()
         if not woo_order:
             return jsonify({'error': 'No data provided'}), 400
 
-        lionwheel_data = transform_woo_to_lionwheel(woo_order)
-        response = create_lionwheel_task(lionwheel_data)
+        company = request.args.get('Company')
+        if not company:
+            return jsonify({'error': 'Company parameter is required'}), 400
+
+        if company == "MahirLi":
+            lionwheel_data = transform_woo_to_lionwheel(woo_order)
+            response = create_lionwheel_task(lionwheel_data)
+        elif company == "Cargo":
+            baldar_data = transform_woo_to_baldar(woo_order)
+            response = create_baldar_task(baldar_data)
+        else:
+            return jsonify({'error': 'Invalid company parameter'}), 400
 
         return jsonify(response)
     except Exception as e:
