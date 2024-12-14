@@ -1,3 +1,5 @@
+from logging import log
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
@@ -10,7 +12,7 @@ CORS(app)
 
 @app.route('/')
 def home():
-    return 'Hello, World V5'
+    return 'Hello, World V6'
 
 
 @app.route('/api/health', methods=['GET'])
@@ -34,6 +36,7 @@ def create_task():
             response = create_lionwheel_task(lionwheel_data)
         elif company == "Cargo":
             baldar_data = transform_woo_to_baldar(woo_order)
+            print(baldar_data)
             response = create_baldar_task(baldar_data)
         else:
             return jsonify({'error': 'Invalid company parameter'}), 400
