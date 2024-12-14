@@ -10,7 +10,7 @@ CORS(app)
 
 @app.route('/')
 def home():
-    return 'Hello, World V3'
+    return 'Hello, World V4'
 
 
 @app.route('/api/health', methods=['GET'])
