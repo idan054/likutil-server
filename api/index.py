@@ -12,7 +12,7 @@ CORS(app)
 
 @app.route('/')
 def home():
-    return 'Hello, World V8'
+    return 'Hello, World V9'
 
 
 @app.route('/api/health', methods=['GET'])
@@ -31,7 +31,7 @@ def create_task():
         if not company:
             return jsonify({'error': 'Company parameter is required'}), 400
 
-        if company == "mahirli":
+        if company == "mahirLi":
             lionwheel_data = transform_woo_to_lionwheel(woo_order)
             response = create_lionwheel_task(lionwheel_data)
             return jsonify(response)
