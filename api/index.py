@@ -12,7 +12,7 @@ CORS(app)
 
 @app.route('/')
 def home():
-    return 'Hello, World V6'
+    return 'Hello, World V7'
 
 
 @app.route('/api/health', methods=['GET'])
@@ -34,14 +34,14 @@ def create_task():
         if company == "MahirLi":
             lionwheel_data = transform_woo_to_lionwheel(woo_order)
             response = create_lionwheel_task(lionwheel_data)
+            return jsonify(response)
         elif company == "Cargo":
             baldar_data = transform_woo_to_baldar(woo_order)
-            print(baldar_data)
             response = create_baldar_task(baldar_data)
+            print(response)
+            return jsonify(response)
         else:
             return jsonify({'error': 'Invalid company parameter'}), 400
-
-        return jsonify(response)
     except Exception as e:
         return jsonify({
             'error': 'Failed to create task',

@@ -36,16 +36,18 @@ def create_baldar_task(p_param):
     Create a task in BALDAR system.
     """
     try:
-        print('p_param')
-        print(p_param)
         response = requests.post(
             "http://45.83.40.28/Baldarp/service.asmx/SaveData",
-            data={"pParam": '1;חידקל;11;יבנה ;חבקוק;חבקוק 114 גדרה;גדרה ;ספיידר 3D;עידן ; - דוגמא להערה;1;1;1;1;1;0;Woo #6000;3131;0;;0;עיר-מוצא-2;;idanbit80@gmail.com - 0584770076;;0'},
-            # data={"pParam": '1;חידקל;11;יבנה ;חבקוק;חבקוק 114 גדרה;גדרה ;ספיידר 3D;עידן ; -  דוגמא להערה;1;1;1;1;1;0;Woo #320457;3131;0;;0;עיר-מוצא-2;;idanbit80@gmail.com - 0584770076;;0'},
+            data={"pParam": p_param},
             headers={'Content-Type': 'application/x-www-form-urlencoded'}
         )
 
+        # Ensure the request was successful
         response.raise_for_status()
-        return response.json()
+
+        # Print and return the raw response text (XML or plain text)
+        print("Response text:", response.text)
+        return response.text
     except requests.exceptions.RequestException as e:
         raise Exception(f"Baldar API error: {str(e)}")
+
