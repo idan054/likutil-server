@@ -2,10 +2,14 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional, Dict
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 from api.config import Config
 from api.services.baldar_service import transform_woo_to_baldar, create_baldar_task
 from api.services.lionwheel_service import transform_woo_to_lionwheel, create_lionwheel_task
+from api.services.send_email import send_email
 
 app = FastAPI()
 
@@ -18,13 +22,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Root Endpoint
 @app.get("/", summary="API Home",
          description="Root endpoint with version status"
          )
 def home():
-    ver = 17
+    ver = 18
     return {"status": "ok", f"version {ver}": ver}
+
+# Pydantic Model for Email
+class EmailRequest(BaseModel):
+    subject: str = Field(..., example="Test Email")
+    body: str = Field(..., example="This is a test email body.")
+    to_email: str = Field(..., example="idanbit80@gmail.com")
+
+
+@app.post("/api/send-email", summary="Send Email", description="Send an email to a specified recipient")
+def send_email_endpoint(email_request: EmailRequest):
+    return send_email(email_request.subject, email_request.body, email_request.to_email)
 
 # Single Pydantic Model for Request Body
 class CreateDeliveryRequest(BaseModel):
