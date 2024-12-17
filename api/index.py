@@ -45,7 +45,7 @@ class CreateDeliveryRequest(BaseModel):
 # Root Endpoint
 @app.get("/", summary="API Home", description="Root endpoint with version status")
 def home():
-    ver = 11
+    ver = 12
     return {"status": "ok", f"version {ver}": ver}
 
 # Task Creation Endpoint
