@@ -6,7 +6,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-from api.config import Config
+from api.config import Config, DeliveryMethod, BaldarHosts
 from api.services.baldar_service import transform_woo_to_baldar, create_baldar_task
 from api.services.lionwheel_service import transform_woo_to_lionwheel, create_lionwheel_task
 from api.services.send_email import send_email
@@ -28,8 +28,9 @@ app.add_middleware(
          description="Root endpoint with version status"
          )
 def home():
-    ver = 18
+    ver = 19
     return {"status": "ok", f"version {ver}": ver}
+
 
 # Pydantic Model for Email
 class EmailRequest(BaseModel):
@@ -41,6 +42,7 @@ class EmailRequest(BaseModel):
 @app.post("/api/send-email", summary="Send Email", description="Send an email to a specified recipient")
 def send_email_endpoint(email_request: EmailRequest):
     return send_email(email_request.subject, email_request.body, email_request.to_email)
+
 
 # Single Pydantic Model for Request Body
 class CreateDeliveryRequest(BaseModel):
@@ -75,61 +77,42 @@ class CreateDeliveryRequest(BaseModel):
         }
     )
 
-# Default Test Data
-TEST_WOO_ORDER = {
-    "pack_num": "1",
-    "id": "000000",
-    "number": "000000",
-    "date_created": "2003-01-03",
-    "customer_note": "יש לבטל! בדיקת חיבור לחברת משלוחים בלבד!",
-    "shipping": {
-        "first_name": "לא",
-        "last_name": "לשלוח",
-        "address_1": "ויצמן 90",
-        "address_2": "",
-        "city": "תל אביב"
-    },
-    "billing": {
-        "phone": "0584770076",
-        "email": "idanbit80@gmail.com"
-    },
-    "business": {
-        "name": "בדיקת בלבד!",
-        "city": "תל אביב",
-        "address": "ויצמן 91"
-    }
-}
 
-@app.post("/api/create-delivery", summary="Create Delivery Task", description="Create a delivery task for the specified company")
+
+@app.post("/api/create-delivery", summary="Create Delivery Task",
+          description="Create a delivery task for the specified company")
 def create_task(
-    woo_order: Optional[CreateDeliveryRequest] = None,
-    method: str = Query(..., description="Method name (e.g., lionWheel, cargo, sale4u)"),
-    key: Optional[str] = Query(None, description="Token or Client ID"),
-    isConnectionTest: bool = Query(False, description="Use predefined test data (true/false)")
+        woo_order: Optional[CreateDeliveryRequest] = None,
+        method: DeliveryMethod = Query(..., description="Method name (e.g., lionWheel, cargo, sale4u, sDeliveries)"),
+        key: Optional[str] = Query(None, description="Token or Client ID"),
+        isConnectionTest: bool = Query(False, description="Use predefined test data (true/false)")
 ):
     try:
         # If isConnectionTest is True, use test data
         if isConnectionTest:
-            woo_order_data = TEST_WOO_ORDER
+            woo_order_data = Config.TEST_WOO_ORDER
         else:
             if woo_order is None:
                 raise HTTPException(status_code=400, detail="woo_order data is required")
             woo_order_data = woo_order.dict()
 
-        # Processing based on method
-        if method == "lionWheel":
+        # Processing dynamically based on DeliveryMethod enum
+        if method == DeliveryMethod.lionWheel:
             lionwheel_data = transform_woo_to_lionwheel(woo_order_data)
             response = create_lionwheel_task(lionwheel_data, key)
             return response
-        elif method in ["cargo", "sale4u"]:
+
+        # MAKE SURE BALDAR IS THE LAST elif
+        elif method in list(DeliveryMethod):  # Dynamically include all enum values
             baldar_data = transform_woo_to_baldar(woo_order_data, key)
-            api_url = (
-                Config.BALDAR_CARGO_URL if method == "cargo"
-                else Config.SALE4U_CARGO_URL
-            )
+            url_map = {
+                DeliveryMethod.cargo: BaldarHosts.CARGO_URL,
+                DeliveryMethod.sale4u: BaldarHosts.SALE4U_URL,
+                DeliveryMethod.sDeliveries: BaldarHosts.S_DELIVERIES_URL,
+            }
+            api_url = url_map[method]
             response = create_baldar_task(baldar_data, api_url)
             return response
-        else:
-            raise HTTPException(status_code=400, detail="Invalid method parameter")
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create task: {str(e)}")
