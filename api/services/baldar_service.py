@@ -3,7 +3,7 @@ from api.config import Config
 from datetime import datetime
 import random
 
-def transform_woo_to_baldar(woo_order):
+def transform_woo_to_baldar(woo_order, clientId):
     """
     Transform WooCommerce order data to BALDAR format.
     """
@@ -21,7 +21,7 @@ def transform_woo_to_baldar(woo_order):
         p_param = (
             f"1;חידקל;11;יבנה ;{buyer_street};{clean_address};{buyer_city} ;"
             f"ספיידר 3D;{buyer_name} ; - {buyer_notes};1;1;1;"
-            f"{pack_num};1;0;Woo #{order_num};3131;0;;0;עיר-מוצא-2;;"
+            f"{pack_num};1;0;Woo #{order_num};{clientId};0;;0;עיר-מוצא-2;;"
             f"{buyer_email} - {buyer_phone};;0"
         )
 

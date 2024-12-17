@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
 
+from api.config import Config
 from api.services.baldar_service import transform_woo_to_baldar, create_baldar_task
 from api.services.lionwheel_service import transform_woo_to_lionwheel, create_lionwheel_task
 
@@ -27,22 +28,24 @@ def create_task():
         if not woo_order:
             return jsonify({'error': 'No data provided'}), 400
 
-        company = request.args.get('Company')
+        company = request.args.get('company')
+        baldarClientId = request.args.get('baldarClientId')
+
         if not company:
             return jsonify({'error': 'Company parameter is required'}), 400
 
         if company == "mahirLi":
             lionwheel_data = transform_woo_to_lionwheel(woo_order)
-            response = create_lionwheel_task(lionwheel_data)
+            response = create_lionwheel_task(lionwheel_data, Config.MAHIRLI_API_KEY)
             return jsonify(response)
         elif company == "cargo":
-            baldar_data = transform_woo_to_baldar(woo_order)
-            response = create_baldar_task(baldar_data, 'http://45.83.40.28')
+            baldar_data = transform_woo_to_baldar(woo_order, baldarClientId)
+            response = create_baldar_task(baldar_data, Config.BALDAR_CARGO_URL)
             print(response)
             return jsonify(response)
         elif company == "sale4u":
-            baldar_data = transform_woo_to_baldar(woo_order)
-            response = create_baldar_task(baldar_data, 'http://185.108.80.50:8050')
+            baldar_data = transform_woo_to_baldar(woo_order, baldarClientId)
+            response = create_baldar_task(baldar_data, Config.SALE4U_CARGO_URL)
             print(response)
             return jsonify(response)
         else:

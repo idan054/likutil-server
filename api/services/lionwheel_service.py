@@ -30,13 +30,13 @@ def transform_woo_to_lionwheel(woo_order):
     except ValueError as e:
         raise Exception(f"Invalid date format in WooCommerce order: {str(e)}")
 
-def create_lionwheel_task(data):
+def create_lionwheel_task(data, apiKey):
     """
     Create a task in Lionwheel system
     """
     try:
         response = requests.post(
-            f"{Config.LIONWHEEL_URL}?key={Config.API_KEY}",
+            f"{Config.LIONWHEEL_URL}?key={apiKey}",
             json=data,
             headers={'Content-Type': 'application/json'}
         )
