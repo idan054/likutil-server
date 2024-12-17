@@ -28,7 +28,7 @@ app.add_middleware(
          description="Root endpoint with version status"
          )
 def home():
-    ver = 22
+    ver = 23
     return {"status": "ok", f"version {ver}": ver}
 
 
@@ -83,8 +83,7 @@ class CreateDeliveryRequest(BaseModel):
           description="Create a delivery task for the specified company")
 def create_task(
         woo_order: Optional[CreateDeliveryRequest] = None,
-        # The method is dropdown of the values while it should be dropDown of the Keys
-        method: DeliveryMethod = Query(..., description="", enum=list(DeliveryMethod.__members__.keys())),
+        method: str = Query(..., description="", enum=list(DeliveryMethod.__members__.keys())),
         key: Optional[str] = Query(None, description="Token or Client ID"),
         isConnectionTest: bool = Query(False, description="Use predefined test data (true/false)")
 ):
@@ -97,16 +96,16 @@ def create_task(
                 raise HTTPException(status_code=400, detail="woo_order data is required")
             woo_order_data = woo_order.dict()
 
-        # Processing dynamically based on DeliveryMethod enum
-        if method == DeliveryMethod.lionWheel:
+            # Processing dynamically based on DeliveryMethod enum
+        if method == "lionWheel":
             lionwheel_data = transform_woo_to_lionwheel(woo_order_data)
             response = create_lionwheel_task(lionwheel_data, key)
             return response
 
-        # MAKE SURE BALDAR IS THE LAST elif
-        elif method in DeliveryMethod.__members__.keys():
+            # BALDAR METHOD HANDLING
+        elif method in DeliveryMethod.__members__:
             baldar_data = transform_woo_to_baldar(woo_order_data, key)
-            api_url = method.value  # Directly use enum's value
+            api_url = DeliveryMethod[method].value  # Access enum value dynamically
             response = create_baldar_task(baldar_data, api_url)
             return response
 

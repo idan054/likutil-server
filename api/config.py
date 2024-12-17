@@ -8,7 +8,7 @@ load_dotenv()
 class DeliveryMethod(str, Enum):
     lionWheel = "lionWheel"
 
-    # BALDAR
+    # Key & Value in use!
     cargo = 'http://45.83.40.28'
     sale4u = 'http://185.108.80.50:8050'
     sDeliveries = 'https://sdelivery.xsyspro.net:8022'
