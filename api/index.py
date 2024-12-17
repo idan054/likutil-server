@@ -28,7 +28,7 @@ app.add_middleware(
          description="Root endpoint with version status"
          )
 def home():
-    ver = 21
+    ver = 22
     return {"status": "ok", f"version {ver}": ver}
 
 
@@ -83,7 +83,8 @@ class CreateDeliveryRequest(BaseModel):
           description="Create a delivery task for the specified company")
 def create_task(
         woo_order: Optional[CreateDeliveryRequest] = None,
-        method: DeliveryMethod = Query(..., description=""),
+        # The method is dropdown of the values while it should be dropDown of the Keys
+        method: DeliveryMethod = Query(..., description="", enum=list(DeliveryMethod.__members__.keys())),
         key: Optional[str] = Query(None, description="Token or Client ID"),
         isConnectionTest: bool = Query(False, description="Use predefined test data (true/false)")
 ):
@@ -103,7 +104,7 @@ def create_task(
             return response
 
         # MAKE SURE BALDAR IS THE LAST elif
-        elif method in DeliveryMethod.__members__.values():
+        elif method in DeliveryMethod.__members__.keys():
             baldar_data = transform_woo_to_baldar(woo_order_data, key)
             api_url = method.value  # Directly use enum's value
             response = create_baldar_task(baldar_data, api_url)
