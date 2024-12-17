@@ -8,19 +8,22 @@ def transform_woo_to_baldar(woo_order, clientId):
     Transform WooCommerce order data to BALDAR format.
     """
     try:
+        business_name = woo_order['business']['name']
+        business_city = woo_order['business']['city']
+        business_address = woo_order['business']['address']
         buyer_street = woo_order['shipping']['address_1']
         clean_address = woo_order['shipping']['address_2'] or ""
         buyer_city = woo_order['shipping']['city']
         buyer_name = f"{woo_order['shipping']['first_name']} {woo_order['shipping']['last_name']}"
         buyer_notes = woo_order.get('customer_note', '')
-        pack_num = "1"  # Default value as per example
+        pack_num = woo_order['pack_num']
         order_num = woo_order['number']
         buyer_phone = woo_order['billing']['phone']
         buyer_email = woo_order['billing']['email']
 
         p_param = (
-            f"1;חידקל;11;יבנה ;{buyer_street};{clean_address};{buyer_city} ;"
-            f"ספיידר 3D;{buyer_name} ; - {buyer_notes};1;1;1;"
+            f"1;{business_address};0;{business_city} ;{buyer_street};{clean_address};{buyer_city} ;"
+            f"{business_name};{buyer_name} ; - {buyer_notes};1;1;1;"
             f"{pack_num};1;0;Woo #{order_num};{clientId};0;;0;עיר-מוצא-2;;"
             f"{buyer_email} - {buyer_phone};;0"
         )

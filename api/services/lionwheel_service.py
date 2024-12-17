@@ -10,8 +10,16 @@ def transform_woo_to_lionwheel(woo_order):
     Transform WooCommerce order data to Lionwheel format
     """
     try:
+        # Update the 'pickup_at' logic
+        pickup_at = (
+            datetime.now().strftime('%d/%m/%Y')  # Use current date if 'date_created' matches the condition
+            if woo_order['date_created'] == "2003-01-03"
+            else datetime.strptime(woo_order['date_created'], '%Y-%m-%d').strftime('%d/%m/%Y')
+        )
+
         return {
-            'pickup_at': datetime.strptime(woo_order['date_created'], '%Y-%m-%d').strftime('%d/%m/%Y'),
+            # only if "date_created": "2003-01-03" use DateTime Noe
+            'pickup_at': pickup_at,
             'original_order_id': f"{woo_order['id']}-{random.randint(1000, 9999)}",
             'notes': f"Order #{woo_order['number']}",
             'packages_quantity': "1",
