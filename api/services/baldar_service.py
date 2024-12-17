@@ -12,7 +12,7 @@ def transform_woo_to_baldar(woo_order, clientId):
         business_city = woo_order['business']['city']
         business_address = woo_order['business']['address']
         buyer_street = woo_order['shipping']['address_1']
-        clean_address = woo_order['shipping']['address_2'] or ""
+        clean_address = woo_order['shipping']['address_1'] or ""
         buyer_city = woo_order['shipping']['city']
         buyer_name = f"{woo_order['shipping']['first_name']} {woo_order['shipping']['last_name']}"
         buyer_notes = woo_order.get('customer_note', '')
