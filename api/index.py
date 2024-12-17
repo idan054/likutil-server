@@ -23,7 +23,7 @@ app.add_middleware(
          description="Root endpoint with version status"
          )
 def home():
-    ver = 15
+    ver = 16
     return {"status": "ok", f"version {ver}": ver}
 
 # Single Pydantic Model for Request Body

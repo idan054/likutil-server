@@ -22,7 +22,7 @@ def transform_woo_to_baldar(woo_order, clientId):
         buyer_email = woo_order['billing']['email']
 
         p_param = (
-            f"1;{business_address};0;{business_city} ;{buyer_street};{clean_address};{buyer_city} ;"
+            f"1;{business_address};{business_address};{business_city} ;{buyer_street};{clean_address};{buyer_city} ;"
             f"{business_name};{buyer_name} ; - {buyer_notes};1;1;1;"
             f"{pack_num};1;0;Woo #{order_num};{clientId};0;;0;עיר-מוצא-2;;"
             f"{buyer_email} - {buyer_phone};;0"
