@@ -24,11 +24,11 @@ app.add_middleware(
 
 
 # Root Endpoint
-@app.get("/", summary="API Home",
+@app.get("/", summary="API Version Checker",
          description="Root endpoint with version status"
          )
 def home():
-    ver = 19
+    ver = 20
     return {"status": "ok", f"version {ver}": ver}
 
 

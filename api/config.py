@@ -8,7 +8,7 @@ load_dotenv()
 class BaldarHosts:
     CARGO_URL = 'http://45.83.40.28'
     SALE4U_URL = 'http://185.108.80.50:8050'
-    S_DELIVERIES_URL = 'http://185.108.80.50:8050'
+    S_DELIVERIES_URL = 'https://sdelivery.xsyspro.net:8022'
 
 
 class DeliveryMethod(str, Enum):
