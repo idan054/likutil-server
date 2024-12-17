@@ -1,57 +1,74 @@
-from logging import log
-
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import os
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+from typing import Optional
 
 from api.config import Config
 from api.services.baldar_service import transform_woo_to_baldar, create_baldar_task
 from api.services.lionwheel_service import transform_woo_to_lionwheel, create_lionwheel_task
 
-app = Flask(__name__)
-CORS(app)
+app = FastAPI()
 
-@app.route('/')
+# CORS Configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Single Pydantic Model for Request Body
+class CreateDeliveryRequest(BaseModel):
+    id: str = Field(..., example="320457")
+    number: str = Field(..., example="320457")
+    date_created: str = Field(..., example="2023-12-14")
+    customer_note: Optional[str] = Field("", example="פילמנט כתום")
+    shipping: dict = Field(
+        ...,
+        example={
+            "first_name": "אח",
+            "last_name": "חינו",
+            "address_1": "ויצמן 90",
+            "address_2": "",
+            "city": "תל אביב"
+        }
+    )
+    billing: dict = Field(
+        ...,
+        example={
+            "phone": "0584770076",
+            "email": "idanbit80@gmail.com"
+        }
+    )
+
+# Root Endpoint
+@app.get("/", summary="API Home", description="Root endpoint with version status")
 def home():
-    return 'Hello, World V9'
+    ver = 11
+    return {"status": "ok", f"version {ver}": ver}
 
-
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    return jsonify({'status': 'ok'})
-
-
-@app.route('/api/create-delivery', methods=['POST'])
-def create_task():
+# Task Creation Endpoint
+@app.post("/api/create-delivery", summary="Create Delivery Task", description="Create a delivery task for the specified company")
+def create_task(
+    woo_order: CreateDeliveryRequest,
+    company: str = Query(..., description="Company name (e.g., mahirLi, cargo, sale4u)"),
+    baldarClientId: Optional[str] = Query(None, description="Baldar Client ID (optional)")
+):
     try:
-        woo_order = request.get_json()
-        if not woo_order:
-            return jsonify({'error': 'No data provided'}), 400
-
-        company = request.args.get('company')
-        baldarClientId = request.args.get('baldarClientId')
-
-        if not company:
-            return jsonify({'error': 'Company parameter is required'}), 400
-
         if company == "mahirLi":
-            lionwheel_data = transform_woo_to_lionwheel(woo_order)
+            lionwheel_data = transform_woo_to_lionwheel(woo_order.dict())
             response = create_lionwheel_task(lionwheel_data, Config.MAHIRLI_API_KEY)
-            return jsonify(response)
-        elif company == "cargo":
-            baldar_data = transform_woo_to_baldar(woo_order, baldarClientId)
-            response = create_baldar_task(baldar_data, Config.BALDAR_CARGO_URL)
-            print(response)
-            return jsonify(response)
-        elif company == "sale4u":
-            baldar_data = transform_woo_to_baldar(woo_order, baldarClientId)
-            response = create_baldar_task(baldar_data, Config.SALE4U_CARGO_URL)
-            print(response)
-            return jsonify(response)
+            return response
+        elif company in ["cargo", "sale4u"]:
+            baldar_data = transform_woo_to_baldar(woo_order.dict(), baldarClientId)
+            api_url = (
+                Config.BALDAR_CARGO_URL if company == "cargo"
+                else Config.SALE4U_CARGO_URL
+            )
+            response = create_baldar_task(baldar_data, api_url)
+            return response
         else:
-            return jsonify({'error': 'Invalid company parameter'}), 400
+            raise HTTPException(status_code=400, detail="Invalid company parameter")
     except Exception as e:
-        return jsonify({
-            'error': 'Failed to create task',
-            'details': str(e)
-        }), 500
+        raise HTTPException(status_code=500, detail=f"Failed to create task: {str(e)}")
