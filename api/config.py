@@ -5,19 +5,15 @@ import os
 load_dotenv()
 
 
-class BaldarHosts:
-    CARGO_URL = 'http://45.83.40.28'
-    SALE4U_URL = 'http://185.108.80.50:8050'
-    S_DELIVERIES_URL = 'https://sdelivery.xsyspro.net:8022'
-
-
 class DeliveryMethod(str, Enum):
-    # BALDAR ENUMS:
-    cargo = "cargo"
-    sale4u = "sale4u"
-    sDeliveries = "sDeliveries"
-
     lionWheel = "lionWheel"
+
+    # BALDAR
+    cargo = 'http://45.83.40.28'
+    sale4u = 'http://185.108.80.50:8050'
+    sDeliveries = 'https://sdelivery.xsyspro.net:8022'
+    negevExpress = 'http://crm.negevdelivery.co.il'
+    whatever = 'http://not-gonna-work.co.il'
 
 
 class Config:

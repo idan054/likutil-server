@@ -6,7 +6,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-from api.config import Config, DeliveryMethod, BaldarHosts
+from api.config import Config, DeliveryMethod
 from api.services.baldar_service import transform_woo_to_baldar, create_baldar_task
 from api.services.lionwheel_service import transform_woo_to_lionwheel, create_lionwheel_task
 from api.services.send_email import send_email
@@ -28,7 +28,7 @@ app.add_middleware(
          description="Root endpoint with version status"
          )
 def home():
-    ver = 20
+    ver = 21
     return {"status": "ok", f"version {ver}": ver}
 
 
@@ -103,14 +103,9 @@ def create_task(
             return response
 
         # MAKE SURE BALDAR IS THE LAST elif
-        elif method in list(DeliveryMethod):  # Dynamically include all enum values
+        elif method in DeliveryMethod.__members__.values():
             baldar_data = transform_woo_to_baldar(woo_order_data, key)
-            url_map = {
-                DeliveryMethod.cargo: BaldarHosts.CARGO_URL,
-                DeliveryMethod.sale4u: BaldarHosts.SALE4U_URL,
-                DeliveryMethod.sDeliveries: BaldarHosts.S_DELIVERIES_URL,
-            }
-            api_url = url_map[method]
+            api_url = method.value  # Directly use enum's value
             response = create_baldar_task(baldar_data, api_url)
             return response
 
