@@ -39,6 +39,8 @@ def create_baldar_task(p_param, host):
     Create a task in BALDAR system.
     """
     try:
+        print("host:", host)
+        print("p_param:", p_param)
         response = requests.post(
             f"{host}/Baldarp/service.asmx/SaveData",
             data={"pParam": p_param},
