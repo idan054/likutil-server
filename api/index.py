@@ -18,6 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Single Pydantic Model for Request Body
 class CreateDeliveryRequest(BaseModel):
     id: str = Field(..., example="320457")
@@ -42,28 +43,35 @@ class CreateDeliveryRequest(BaseModel):
         }
     )
 
+
 # Root Endpoint
-@app.get("/", summary="API Home", description="Root endpoint with version status")
+@app.get("/", summary="API Home",
+         description="Root endpoint with version status"
+         )
 def home():
-    ver = 12
+    ver = 13
     return {"status": "ok", f"version {ver}": ver}
 
+
 # Task Creation Endpoint
-@app.post("/api/create-delivery", summary="Create Delivery Task", description="Create a delivery task for the specified company")
+@app.post("/api/create-delivery",
+          summary="Create Delivery Task",
+          description="Create a delivery task for the specified company"
+          )
 def create_task(
-    woo_order: CreateDeliveryRequest,
-    company: str = Query(..., description="Company name (e.g., mahirLi, cargo, sale4u)"),
-    baldarClientId: Optional[str] = Query(None, description="Baldar Client ID (optional)")
+        woo_order: CreateDeliveryRequest,
+        method: str = Query(..., description="method name (e.g., lionWheel, cargo, sale4u)"),
+        key: Optional[str] = Query(None, description="Token or Client ID")
 ):
     try:
-        if company == "mahirLi":
+        if method == "lionWheel":
             lionwheel_data = transform_woo_to_lionwheel(woo_order.dict())
-            response = create_lionwheel_task(lionwheel_data, Config.MAHIRLI_API_KEY)
+            response = create_lionwheel_task(lionwheel_data, key)
             return response
-        elif company in ["cargo", "sale4u"]:
-            baldar_data = transform_woo_to_baldar(woo_order.dict(), baldarClientId)
+        elif method in ["cargo", "sale4u"]:
+            baldar_data = transform_woo_to_baldar(woo_order.dict(), key)
             api_url = (
-                Config.BALDAR_CARGO_URL if company == "cargo"
+                Config.BALDAR_CARGO_URL if method == "cargo"
                 else Config.SALE4U_CARGO_URL
             )
             response = create_baldar_task(baldar_data, api_url)
