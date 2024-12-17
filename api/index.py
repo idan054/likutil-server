@@ -83,7 +83,7 @@ class CreateDeliveryRequest(BaseModel):
           description="Create a delivery task for the specified company")
 def create_task(
         woo_order: Optional[CreateDeliveryRequest] = None,
-        method: DeliveryMethod = Query(..., description="Method name (e.g., lionWheel, cargo, sale4u, sDeliveries)"),
+        method: DeliveryMethod = Query(..., description=""),
         key: Optional[str] = Query(None, description="Token or Client ID"),
         isConnectionTest: bool = Query(False, description="Use predefined test data (true/false)")
 ):
