@@ -6,7 +6,6 @@ load_dotenv()
 class Config:
     PORT = int(os.getenv('PORT', 5005))
     LIONWHEEL_URL = 'https://members.lionwheel.com/api/v1/tasks/create'
-    MAHIRLI_API_KEY = 'c_key_3694a9a7-6993-4d4a-8016-cedf0759f9eb'
 
     # Baldar HOSTS:
     BALDAR_CARGO_URL = 'http://45.83.40.28'
