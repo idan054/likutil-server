@@ -23,11 +23,12 @@ app.add_middleware(
          description="Root endpoint with version status"
          )
 def home():
-    ver = 14
+    ver = 15
     return {"status": "ok", f"version {ver}": ver}
 
 # Single Pydantic Model for Request Body
 class CreateDeliveryRequest(BaseModel):
+    pack_num: str = Field(..., example="1")
     id: str = Field(..., example="000000")
     number: str = Field(..., example="000000")
     date_created: str = Field(..., example="2003-01-03")
@@ -60,6 +61,7 @@ class CreateDeliveryRequest(BaseModel):
 
 # Default Test Data
 TEST_WOO_ORDER = {
+    "pack_num": "1",
     "id": "000000",
     "number": "000000",
     "date_created": "2003-01-03",
