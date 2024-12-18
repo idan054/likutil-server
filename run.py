@@ -15,6 +15,7 @@
 
 
 import uvicorn
+
 from api.config import Config
 
 if __name__ == "__main__":
