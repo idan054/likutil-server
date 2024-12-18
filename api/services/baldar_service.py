@@ -66,8 +66,8 @@ def create_baldar_kamatra_task(p_param, host):
         print("p_param:", p_param)
         # THIS IS ACTUALLY JUST run_flask_kamertra_proxy.py BUT AS ISRAEL SERVER
         response = requests.post(
-            f"{host}/negevExpressMyKametra",
-            data={"pParam": p_param},
+            f"{host}/negevKametraProxy",
+            data=f"pParam={p_param}",
             headers={'Content-Type': 'application/x-www-form-urlencoded'}
         )
 

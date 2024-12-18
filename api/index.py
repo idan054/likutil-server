@@ -29,7 +29,7 @@ app.add_middleware(
          description="Root endpoint with version status"
          )
 def home():
-    ver = 27
+    ver = 28
     return {"status": "ok", f"version {ver}": ver}
 
 
