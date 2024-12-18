@@ -24,7 +24,8 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=Config.PORT,
         reload=True,
-        ssl_keyfile="selfsigned.key",
-        ssl_certfile="selfsigned.crt"
 
+        # BE WISE ABOUT THE FOLDER THOSE EXIST...
+        # ssl_keyfile="selfsigned.key",
+        # ssl_certfile="selfsigned.crt"
     )
