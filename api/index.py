@@ -29,7 +29,7 @@ app.add_middleware(
          description="Root endpoint with version status"
          )
 def home():
-    ver = 26
+    ver = 27
     return {"status": "ok", f"version {ver}": ver}
 
 
@@ -105,7 +105,7 @@ def create_task(
 
         if method == "negevExpressMyKametra":
             baldar_data = transform_woo_to_baldar(woo_order_data, key)
-            response = create_baldar_kamatra_task(baldar_data, DeliveryMethod.negevExpressMyKametra)
+            response = create_baldar_kamatra_task(baldar_data, DeliveryMethod.negevExpressMyKametra.value)
             return response
 
             # THAN HANDLING BALDAR METHODS
