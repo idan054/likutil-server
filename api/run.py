@@ -1,17 +1,17 @@
-
-from flask import Flask
-
-from api.index import app
-from config import Config
-
-
-
+#
+# from flask import Flask
+#
+# from api.index import app
+# from config import Config
+#
+#
+#
 # Flask
 # if __name__ == '__main__':
 #     app.run(host='0.0.0.0', port=Config.PORT)
-
+#
 # FastAPI
-from api.index import app
+# from api.index import app
 from config import Config
 
 import uvicorn
