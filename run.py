@@ -12,9 +12,10 @@
 #
 # FastAPI
 # from api.index import app
-from config import Config
+
 
 import uvicorn
+from api.config import Config
 
 if __name__ == "__main__":
     uvicorn.run("api.index:app", host="0.0.0.0", port=Config.PORT, reload=True)
