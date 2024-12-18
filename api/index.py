@@ -13,22 +13,11 @@ from api.services.send_email import send_email
 
 app = FastAPI()
 
-# CORS Configuration
-# List of authorized domains
-allowed_origins = [
-    "http://localhost",
-    "https://likutil.firebaseapp.com",
-    "https://likutil.web.app",
-    "https://likutil-bitonapp.netlify.app",
-    "https://stackblitz.io",
-    "https://webcontainer.io",
-    "https://likutil.co.il",
-]
 
 # CORS Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,  # Allow listed domains
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
