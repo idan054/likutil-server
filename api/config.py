@@ -13,6 +13,7 @@ class DeliveryMethod(str, Enum):
     sale4u = 'http://185.108.80.50:8050'
     sDeliveries = 'https://sdelivery.xsyspro.net:8022'
     negevExpress = 'http://crm.negevdelivery.co.il'
+    negevExpressMyKametra = 'http://103.45.244.196:8000'
     whatever = 'http://not-gonna-work.co.il'
 
 

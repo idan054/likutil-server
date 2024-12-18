@@ -56,3 +56,27 @@ def create_baldar_task(p_param, host):
     except requests.exceptions.RequestException as e:
         raise Exception(f"Baldar API error: {str(e)}")
 
+
+def create_baldar_kamatra_task(p_param, host):
+    """
+    Create a task in BALDAR system.
+    """
+    try:
+        print("host:", host)
+        print("p_param:", p_param)
+        # THIS IS ACTUALLY JUST run_flask_kamertra_proxy.py BUT AS ISRAEL SERVER
+        response = requests.post(
+            f"{host}/negevExpressMyKametra",
+            data={"pParam": p_param},
+            headers={'Content-Type': 'application/x-www-form-urlencoded'}
+        )
+
+        # Ensure the request was successful
+        response.raise_for_status()
+
+        # Print and return the raw response text (XML or plain text)
+        print("Response text:", response.text)
+        return response.text
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Baldar API error: {str(e)}")
+

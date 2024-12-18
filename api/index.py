@@ -7,7 +7,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 from api.config import Config, DeliveryMethod
-from api.services.baldar_service import transform_woo_to_baldar, create_baldar_task
+from api.services.baldar_service import transform_woo_to_baldar, create_baldar_task, create_baldar_kamatra_task
 from api.services.lionwheel_service import transform_woo_to_lionwheel, create_lionwheel_task
 from api.services.send_email import send_email
 
@@ -29,7 +29,7 @@ app.add_middleware(
          description="Root endpoint with version status"
          )
 def home():
-    ver = 24
+    ver = 25
     return {"status": "ok", f"version {ver}": ver}
 
 
@@ -101,6 +101,11 @@ def create_task(
         if method == "lionWheel":
             lionwheel_data = transform_woo_to_lionwheel(woo_order_data)
             response = create_lionwheel_task(lionwheel_data, key)
+            return response
+
+        if method == "negevExpressMyKametra":
+            baldar_data = transform_woo_to_baldar(woo_order_data, key)
+            response = create_baldar_kamatra_task(baldar_data, key)
             return response
 
             # THAN HANDLING BALDAR METHODS
