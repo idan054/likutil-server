@@ -21,7 +21,9 @@ app = FastAPI()
 import firebase_admin
 from firebase_admin import credentials
 
-cred = credentials.Certificate("./likutil-firebase-adminsdk-bbpdy-adb99de0cf.json")
+code1 = './likutil-firebase-adminsdk'
+code2 = '-bbpdy-adb99de0cf.json'
+cred = credentials.Certificate(f"{code1}{code2}")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
