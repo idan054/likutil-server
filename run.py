@@ -1,22 +1,8 @@
-#
-# from flask import Flask
-#
-# from api.index import app
-# from config import Config
-#
-#
-#
-# Flask
-# if __name__ == '__main__':
-#     app.run(host='0.0.0.0', port=Config.PORT)
-#
-# FastAPI
-# from api.index import app
 
-
+# cd /opt/fastapi
+# sudo nano /etc/systemd/system/fastapi.service
+# To Start The App as a service So it will stay when disconnected
 import uvicorn
-
-from api.config import Config
 
 if __name__ == "__main__":
     uvicorn.run(
@@ -24,8 +10,4 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=8000,
         reload=True,
-
-        # BE WISE ABOUT THE FOLDER THOSE EXIST...
-        # ssl_keyfile="selfsigned.key",
-        # ssl_certfile="selfsigned.crt"
     )
