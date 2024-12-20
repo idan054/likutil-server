@@ -8,17 +8,14 @@ load_dotenv()
 class DeliveryMethod(str, Enum):
     lionWheel = "lionWheel"
 
-    # Key & Value in use!
+    # BALDAR Key & Value in use!
     cargo = 'http://45.83.40.28'
     sale4u = 'http://185.108.80.50:8050'
     sDeliveries = 'https://sdelivery.xsyspro.net:8022'
     negevExpress = 'http://crm.negevdelivery.co.il'
-    negevExpressMyKametra = 'http://103.45.244.196:8000'
-    whatever = 'http://not-gonna-work.co.il'
 
 
 class Config:
-    PORT = int(os.getenv('PORT', 5005))
     LIONWHEEL_URL = 'https://members.lionwheel.com/api/v1/tasks/create'
 
     # Default Test Data

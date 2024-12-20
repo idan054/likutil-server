@@ -1,42 +1,72 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
+
+from google.cloud.firestore_v1 import SERVER_TIMESTAMP
+
 from api.config import Config, DeliveryMethod
 from api.services.baldar_service import transform_woo_to_baldar, create_baldar_task, create_baldar_kamatra_task
+from api.services.clean_url import sanitize_url
 from api.services.lionwheel_service import transform_woo_to_lionwheel, create_lionwheel_task
 from api.services.models import WooAuthData, EmailRequest, CreateDeliveryRequest
 from api.services.send_email import send_email
+import firebase_admin
+from firebase_admin import firestore, credentials
+from fastapi import FastAPI, HTTPException, Request
+from pydantic import BaseModel
+from datetime import datetime
 
 app = FastAPI()
 
-# CORS Configuration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+import firebase_admin
+from firebase_admin import credentials
 
+cred = credentials.Certificate("./likutil-firebase-adminsdk-bbpdy-adb99de0cf.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client()
+
+@app.post("/woo-auth-callback", summary="WooCommerce Auth Callback Handler")
+async def handle_auth(data: WooAuthData, request: Request):
+    try:
+        # Extract store URL from the Referer header
+        referer = request.headers.get("referer", "").strip()
+        store_url = sanitize_url(referer)
+
+        # Reference to the user's document
+        user_ref = db.collection("users").document(str(data.user_id))
+        user_doc = user_ref.get()
+
+        # Prepare the user data
+        user_data = {
+            "lastLogin": datetime.utcnow(),
+            "storeUrl": store_url,
+            "consumerKey": data.consumer_key,
+            "consumerSecret": data.consumer_secret,
+            "userId": data.user_id,
+            "key_permissions": data.key_permissions,
+            "key_id": data.key_id,
+        }
+
+        # Set `createdAt` only if it doesn't exist
+        if not user_doc.exists or "createdAt" not in user_doc.to_dict():
+            user_data["createdAt"] = SERVER_TIMESTAMP
+
+        # Save to Firestore
+        user_ref.set(user_data, merge=True)
+
+        return {"status": "success", "message": "User data saved to Firestore"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Root Endpoint
 @app.get("/", summary="API Version Checker",
          description="Root endpoint with version status"
          )
 def home():
-    ver = 31
+    ver = 32
     return {"status": "ok", f"version {ver}": ver}
 
 
-# Endpoint to handle WooCommerce callback
-@app.post("/woo-auth-callback", summary="WooCommerce Auth Callback Handler")
-async def handle_auth(data: WooAuthData):
-    # Log the received data
-    print("XXXX")
-    print("Received WooCommerce Auth Data:", data)
-
-    # Example response
-    return {"status": "success", "message": "Auth data received successfully"}
 
 
 @app.post("/api/send-email", summary="Send Email", description="Send an email to a specified recipient")
@@ -67,7 +97,8 @@ def create_task(
             response = create_lionwheel_task(lionwheel_data, key)
             return response
 
-            # THAN HANDLING BALDAR METHODS
+
+        # All BALDAR: cargo, sale4u, sDeliveries, negevExpress
         elif method in DeliveryMethod.__members__:
             baldar_data = transform_woo_to_baldar(woo_order_data, key)
             api_url = DeliveryMethod[method].value  # Access Needed host Based eNum Key & Value
