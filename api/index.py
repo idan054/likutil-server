@@ -67,11 +67,6 @@ def create_task(
             response = create_lionwheel_task(lionwheel_data, key)
             return response
 
-        if method == "negevExpressMyKametra":
-            baldar_data = transform_woo_to_baldar(woo_order_data, key)
-            response = create_baldar_kamatra_task(baldar_data, DeliveryMethod.negevExpressMyKametra.value)
-            return response
-
             # THAN HANDLING BALDAR METHODS
         elif method in DeliveryMethod.__members__:
             baldar_data = transform_woo_to_baldar(woo_order_data, key)
