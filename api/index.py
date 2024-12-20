@@ -1,18 +1,13 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
-from typing import Optional, Dict
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
+from typing import Optional
 from api.config import Config, DeliveryMethod
 from api.services.baldar_service import transform_woo_to_baldar, create_baldar_task, create_baldar_kamatra_task
 from api.services.lionwheel_service import transform_woo_to_lionwheel, create_lionwheel_task
+from api.services.models import WooAuthData, EmailRequest, CreateDeliveryRequest
 from api.services.send_email import send_email
 
 app = FastAPI()
-
 
 # CORS Configuration
 app.add_middleware(
@@ -29,55 +24,23 @@ app.add_middleware(
          description="Root endpoint with version status"
          )
 def home():
-    ver = 28
+    ver = 29
     return {"status": "ok", f"version {ver}": ver}
 
 
-# Pydantic Model for Email
-class EmailRequest(BaseModel):
-    subject: str = Field(..., example="Test Email")
-    body: str = Field(..., example="This is a test email body.")
-    to_email: str = Field(..., example="idanbit80@gmail.com")
+# Endpoint to handle WooCommerce callback
+@app.post("/woo-auth-callback", summary="WooCommerce Auth Callback Handler")
+async def handle_auth(data: WooAuthData):
+    # Log the received data
+    print("Received WooCommerce Auth Data:", data)
+
+    # Example response
+    return {"status": "success", "message": "Auth data received successfully"}
 
 
 @app.post("/api/send-email", summary="Send Email", description="Send an email to a specified recipient")
 def send_email_endpoint(email_request: EmailRequest):
     return send_email(email_request.subject, email_request.body, email_request.to_email)
-
-
-# Single Pydantic Model for Request Body
-class CreateDeliveryRequest(BaseModel):
-    pack_num: str = Field(..., example="1")
-    id: str = Field(..., example="000000")
-    number: str = Field(..., example="000000")
-    date_created: str = Field(..., example="2003-01-03")
-    customer_note: Optional[str] = Field("", example="יש לבטל! בדיקת חיבור לחברת משלוחים בלבד!")
-    shipping: Dict[str, str] = Field(
-        ...,
-        example={
-            "first_name": "לא",
-            "last_name": "לשלוח",
-            "address_1": "ויצמן 90",
-            "address_2": "",
-            "city": "תל אביב"
-        }
-    )
-    billing: Dict[str, str] = Field(
-        ...,
-        example={
-            "phone": "0584770076",
-            "email": "idanbit80@gmail.com"
-        }
-    )
-    business: Dict[str, str] = Field(
-        ...,
-        example={
-            "name": "בדיקת בלבד!",
-            "city": "תל אביב",
-            "address": "ויצמן 91"
-        }
-    )
-
 
 
 @app.post("/api/create-delivery", summary="Create Delivery Task",
