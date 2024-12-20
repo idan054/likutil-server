@@ -24,7 +24,7 @@ app.add_middleware(
          description="Root endpoint with version status"
          )
 def home():
-    ver = 29
+    ver = 30
     return {"status": "ok", f"version {ver}": ver}
 
 
@@ -32,6 +32,7 @@ def home():
 @app.post("/woo-auth-callback", summary="WooCommerce Auth Callback Handler")
 async def handle_auth(data: WooAuthData):
     # Log the received data
+    print("XXXX")
     print("Received WooCommerce Auth Data:", data)
 
     # Example response
