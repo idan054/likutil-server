@@ -1,22 +1,26 @@
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.middleware.cors import CORSMiddleware
-from typing import Optional
-from api.config import Config, DeliveryMethod
-from api.services.baldar_service import transform_woo_to_baldar, create_baldar_task, create_baldar_kamatra_task
-from api.services.lionwheel_service import transform_woo_to_lionwheel, create_lionwheel_task
-from api.services.models import WooAuthData, EmailRequest, CreateDeliveryRequest
-from api.services.send_email import send_email
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
-import logging
-import uvicorn
-from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import requests
 import logging
 from openai import OpenAI
 import os
 
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
+
+from google.cloud.firestore_v1 import SERVER_TIMESTAMP
+from api.config import Config, DeliveryMethod
+from api.services.baldar_service import transform_woo_to_baldar, create_baldar_task, create_baldar_kamatra_task
+from api.services.clean_url import sanitize_url
+from api.services.lionwheel_service import transform_woo_to_lionwheel, create_lionwheel_task
+from api.services.models import WooAuthData, EmailRequest, CreateDeliveryRequest
+from api.services.send_email import send_email
+from firebase_admin import firestore, credentials
+from fastapi import FastAPI, HTTPException, Request
+from pydantic import BaseModel
+from datetime import datetime
+import firebase_admin
+from firebase_admin import credentials
 
 app = FastAPI()
 api_key = os.getenv("OPENAI_API_KEY")
@@ -31,6 +35,44 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+cred = credentials.Certificate("./likutil-firebase-adminsdk-bbpdy-adb99de0cf.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client()
+
+
+@app.post("/woo-auth-callback", summary="WooCommerce Auth Callback Handler")
+async def handle_auth(data: WooAuthData, request: Request):
+    try:
+        # Extract store URL from the Referer header
+        referer = request.headers.get("referer", "").strip()
+        store_url = sanitize_url(referer)
+
+        # Reference to the user's document
+        user_ref = db.collection("users").document(str(data.user_id))
+        user_doc = user_ref.get()
+
+        # Prepare the user data
+        user_data = {
+            "lastLogin": datetime.utcnow(),
+            "storeUrl": store_url,
+            "consumerKey": data.consumer_key,
+            "consumerSecret": data.consumer_secret,
+            "userId": data.user_id,
+            "key_permissions": data.key_permissions,
+            "key_id": data.key_id,
+        }
+
+        # Set `createdAt` only if it doesn't exist
+        if not user_doc.exists or "createdAt" not in user_doc.to_dict():
+            user_data["createdAt"] = SERVER_TIMESTAMP
+
+        # Save to Firestore
+        user_ref.set(user_data, merge=True)
+
+        return {"status": "success", "message": "User data saved to Firestore"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # Root Endpoint
 @app.get("/", summary="API Version Checker",
@@ -39,17 +81,6 @@ app.add_middleware(
 def home():
     ver = 36
     return {"status": "ok", f"version {ver}": ver}
-
-
-# Endpoint to handle WooCommerce callback
-@app.post("/woo-auth-callback", summary="WooCommerce Auth Callback Handler")
-async def handle_auth(data: WooAuthData):
-    # Log the received data
-    print("XXXX")
-    print("Received WooCommerce Auth Data:", data)
-
-    # Example response
-    return {"status": "success", "message": "Auth data received successfully"}
 
 
 @app.post("/api/send-email", summary="Send Email", description="Send an email to a specified recipient")
@@ -80,7 +111,6 @@ def create_task(
             response = create_lionwheel_task(lionwheel_data, key)
             return response
 
-
             # THAN HANDLING BALDAR METHODS
         elif method in DeliveryMethod.__members__:
             baldar_data = transform_woo_to_baldar(woo_order_data, key)
@@ -92,10 +122,10 @@ def create_task(
         raise HTTPException(status_code=500, detail=f"Failed to create task: {str(e)}")
 
 
-
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='BITON %(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
+
 
 @app.get("/getGptResp")
 async def handle_get_gpt_response(request: Request):
@@ -103,6 +133,7 @@ async def handle_get_gpt_response(request: Request):
     answer = get_gpt_response('מה צבע העיניים של ביבי?')
     logger.info(f"GET request received with query params: {query_params}")
     return JSONResponse(content={"status": "GET received", "data": answer})
+
 
 def get_gpt_response(user_message):
     print('api_key')
@@ -139,12 +170,12 @@ def get_gpt_response(user_message):
     print(response.choices[0].message.content)
     return response.choices[0].message.content
 
+
 @app.get("/liorWaBot")
 async def handle_get(request: Request):
     query_params = dict(request.query_params)
     logger.info(f"GET request received with query params: {query_params}")
     return JSONResponse(content={"status": "GET received", "data": query_params})
-
 
 
 logger = logging.getLogger("uvicorn.error")
@@ -208,25 +239,25 @@ async def handle_post(request: Request):
 
 # Example JSON input
 example_json = {
-  "typeWebhook": "incomingMessageReceived",
-  "instanceData": {
-    "idInstance": 7103166851,
-    "wid": "972584770076@c.us",
-    "typeInstance": "whatsapp"
-  },
-  "timestamp": 1734783026,
-  "idMessage": "3A8F71C92735202948BD",
-  "senderData": {
-    "chatId": "120363360946946323@g.us",
-    "chatName": "ליאורי🏹💕",
-    "sender": "972503219900@c.us",
-    "senderName": "ליאורי🏹💕",
-    "senderContactName": ""
-  },
-  "messageData": {
-    "typeMessage": "textMessage",
-    "textMessageData": {
-      "textMessage": "הייגירל"
+    "typeWebhook": "incomingMessageReceived",
+    "instanceData": {
+        "idInstance": 7103166851,
+        "wid": "972584770076@c.us",
+        "typeInstance": "whatsapp"
+    },
+    "timestamp": 1734783026,
+    "idMessage": "3A8F71C92735202948BD",
+    "senderData": {
+        "chatId": "120363360946946323@g.us",
+        "chatName": "ליאורי🏹💕",
+        "sender": "972503219900@c.us",
+        "senderName": "ליאורי🏹💕",
+        "senderContactName": ""
+    },
+    "messageData": {
+        "typeMessage": "textMessage",
+        "textMessageData": {
+            "textMessage": "הייגירל"
+        }
     }
-  }
 }
