@@ -111,7 +111,8 @@ async def handle_post(request: Request):
             body.get("senderData", {}).get("chatId") == "120363360946946323@g.us"
     ):
         # Send the message
-        url = "https://7103.api.greenapi.com/waInstance7103154645/sendMessage/625b05dd2a5a4301a53550e8bdbd51810336b4be984c491c96"
+        url = "https://7103.api.greenapi.com/waInstance7103166851/sendMessage/39cd5f15b62b42ffa156d1fb589360b4df1d0ed7e56b49a4bf"
+
         payload = {
             "chatId": "120363360946946323@g.us",
             "message": "היי לי אור, אני סופי (:"
