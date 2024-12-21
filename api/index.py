@@ -142,45 +142,58 @@ async def handle_get(request: Request):
     return JSONResponse(content={"status": "GET received", "data": query_params})
 
 
+
+logger = logging.getLogger("uvicorn.error")
+
+
 @app.post("/liorWaBot")
 async def handle_post(request: Request):
-    global answer
-    body = await request.json()
-    # body = example_json # USE FOR DEBUG
+    try:
+        body = await request.json()
+        logger.info(f"POST request received with body: {body}")
 
-    logger.info(f"POST request received with body: {body}")
+        # Check conditions
+        if (
+                body.get("typeWebhook") == "incomingMessageReceived" and
+                body.get("senderData", {}).get("chatId") == "120363360946946323@g.us"
+        ):
+            try:
+                # Extract the user's message
+                user_message = body.get("messageData", {}).get("textMessageData", {}).get("textMessage", "")
 
-    # Check conditions
-    if (
-            (body.get("typeWebhook") == "incomingMessageReceived"
-             and body.get("senderData", {}).get("chatId") == "120363360946946323@g.us"
-            )
-    ):
-        # Extract the user's message
-        user_message = body.get("messageData", {}).get("textMessageData", {}).get("textMessage", "")
+                # Create the response message
+                answer = get_gpt_response(user_message)
 
-        # Create the response message
+                # Send the message
+                url = "https://7103.api.greenapi.com/waInstance7103166851/sendMessage/39cd5f15b62b42ffa156d1fb589360b4df1d0ed7e56b49a4bf"
+                payload = {
+                    "chatId": "120363360946946323@g.us",
+                    "message": answer
+                }
+                headers = {
+                    'Content-Type': 'application/json'
+                }
+                response = requests.post(url, json=payload, headers=headers)
+                logger.info(f"Message sent, response: {response.text}")
+            except Exception as e:
+                logger.error(f"Error while processing message: {e}")
+                return JSONResponse(content={
+                    "status": "Error processing message",
+                    "error": str(e),
+                    "data": body
+                })
 
-        answer = get_gpt_response(user_message)
+        return JSONResponse(content={
+            "status": "POST received",
+            "data": body
+        })
 
-        # Send the message
-        url = "https://7103.api.greenapi.com/waInstance7103166851/sendMessage/39cd5f15b62b42ffa156d1fb589360b4df1d0ed7e56b49a4bf"
-
-        payload = {
-            "chatId": "120363360946946323@g.us",
-            "message": answer
-        }
-        headers = {
-            'Content-Type': 'application/json'
-        }
-        response = requests.post(url, json=payload, headers=headers)
-        logger.info(f"Message sent, response: {response.text}")
-
-    return JSONResponse(content={
-        "status": "POST received",
-        'gptAnswer' : answer,
-         "data": body
-    })
+    except Exception as e:
+        logger.error(f"Error in handling POST request: {e}")
+        return JSONResponse(content={
+            "status": "Error handling request",
+            "error": str(e)
+        })
 
 
 # Example JSON input
