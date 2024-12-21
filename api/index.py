@@ -58,6 +58,9 @@ db = firestore.client()
 async def handle_auth(data: WooAuthData, request: Request):
     print('handle_auth')
     try:
+        print('request.json()')
+        print(request.json())
+
         # Extract store URL from the Referer header
         print('full_req_url')
         full_req_url = str(request.url)
@@ -70,13 +73,14 @@ async def handle_auth(data: WooAuthData, request: Request):
         # Reference to the user's document
         print('user_ref')
         user_ref = db.collection("users").document(str(store_url))
+        print(user_ref)
+        print(user_ref.id)
 
         print('data.user_id')
         print(data.user_id)
         try:
             user_doc = user_ref.get()
         except Exception:
-            print('NEW USER! NOT EXIST YET')
             user_doc = None
 
         print('user_doc')
