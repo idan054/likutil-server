@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
-
+from flask import Flask, request, jsonify
+import logging
 from google.cloud.firestore_v1 import SERVER_TIMESTAMP
 
 from api.config import Config, DeliveryMethod
@@ -69,8 +70,6 @@ def home():
     return {"status": "ok", f"version {ver}": ver}
 
 
-
-
 @app.post("/api/send-email", summary="Send Email", description="Send an email to a specified recipient")
 def send_email_endpoint(email_request: EmailRequest):
     return send_email(email_request.subject, email_request.body, email_request.to_email)
@@ -109,3 +108,26 @@ def create_task(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create task: {str(e)}")
+
+
+# Lior BOT:
+# Configure logging to ensure all data is logged to /var/log/nginx/access.log
+logging.basicConfig(
+    filename='/var/log/nginx/access.log',
+    level=logging.INFO,
+    format='%(asctime)s %(message)s',
+)
+
+@app.route('/liorWaBot', methods=['GET', 'POST'])
+def lior_wa_bot():
+    if request.method == 'POST':
+        data = request.get_json() or request.data.decode('utf-8')
+        logging.info(f"POST Request: Headers: {dict(request.headers)}, Body: {data}")
+        print(f"POST Request: Headers: {dict(request.headers)}, Body: {data}")
+        return jsonify({"status": "POST received", "data": data})
+
+    if request.method == 'GET':
+        args = request.args
+        logging.info(f"GET Request: Headers: {dict(request.headers)}, Params: {args}")
+        print(f"GET Request: Headers: {dict(request.headers)}, Params: {args}")
+        return jsonify({"status": "GET received", "params": args})
