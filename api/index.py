@@ -15,10 +15,12 @@ from fastapi.responses import JSONResponse
 import requests
 import logging
 from openai import OpenAI
+import os
 
 
 app = FastAPI()
-client = OpenAI(api_key="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")
+api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=api_key)
 
 # CORS Configuration
 app.add_middleware(

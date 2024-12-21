@@ -22,6 +22,7 @@
 # CTRL + C (To Exit LOGS)
 
 # git pull && sudo systemctl restart fastapi && sudo tail -f /var/log/nginx/access.log
+# export OPENAI_API_KEY="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"
 import uvicorn
 from pip._internal.cli.cmdoptions import debug_mode
 
