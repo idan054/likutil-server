@@ -112,20 +112,20 @@ def create_task(
 
 
 # Set up logging
-# logging.basicConfig(level=logging.INFO, format='BITON %(asctime)s - %(message)s')
-# logger = logging.getLogger(__name__)
-#
-# @app.get("/liorWaBot")
-# async def handle_get(request: Request):
-#     query_params = dict(request.query_params)
-#     logger.info(f"GET request received with query params: {query_params}")
-#     return JSONResponse(content={"status": "GET received", "data": query_params})
-#
-# @app.post("/liorWaBot")
-# async def handle_post(request: Request):
-#     body = await request.json()
-#     logger.info(f"POST request received with body: {body}")
-#     return JSONResponse(content={"status": "POST received", "data": body})
+logging.basicConfig(level=logging.INFO, format='BITON %(asctime)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+@app.get("/liorWaBot")
+async def handle_get(request: Request):
+    query_params = dict(request.query_params)
+    logger.info(f"GET request received with query params: {query_params}")
+    return JSONResponse(content={"status": "GET received", "data": query_params})
+
+@app.post("/liorWaBot")
+async def handle_post(request: Request):
+    body = await request.json()
+    logger.info(f"POST request received with body: {body}")
+    return JSONResponse(content={"status": "POST received", "data": body})
 
 
 
