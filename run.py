@@ -1,4 +1,5 @@
 
+# Make sure ur using PORT 8000
 # ssh root@185.28.154.36
 # Enter Password (Available in Kametra-Bitwarden)
 # cd /opt/fastapi
@@ -19,6 +20,7 @@
 # sudo tail -f /var/log/nginx/error.log
 # CTRL + C (To Exit LOGS)
 
+# git pull && sudo systemctl restart fastapi && sudo tail -f /var/log/nginx/access.log
 import uvicorn
 
 if __name__ == "__main__":
