@@ -110,12 +110,18 @@ async def handle_post(request: Request):
             body.get("typeWebhook") == "incomingMessageReceived" and
             body.get("senderData", {}).get("chatId") == "120363360946946323@g.us"
     ):
+        # Extract the user's message
+        user_message = body.get("messageData", {}).get("textMessageData", {}).get("textMessage", "")
+
+        # Create the response message
+        response_message = f"היי לי אור, אני סופי (: {user_message}"
+
         # Send the message
         url = "https://7103.api.greenapi.com/waInstance7103166851/sendMessage/39cd5f15b62b42ffa156d1fb589360b4df1d0ed7e56b49a4bf"
 
         payload = {
             "chatId": "120363360946946323@g.us",
-            "message": "היי לי אור, אני סופי (:"
+            "message": response_message
         }
         headers = {
             'Content-Type': 'application/json'
