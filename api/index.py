@@ -105,6 +105,10 @@ async def handle_get_gpt_response(request: Request):
     return JSONResponse(content={"status": "GET received", "data": answer})
 
 def get_gpt_response(user_message):
+    print('api_key')
+    print(api_key)
+    print('client KEY')
+    print(client.api_key)
     response = client.chat.completions.create(
         model="gpt-4o-mini-2024-07-18",
         messages=[
