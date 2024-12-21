@@ -4,6 +4,7 @@ from typing import Optional
 from flask import Flask, request, jsonify
 import logging
 from google.cloud.firestore_v1 import SERVER_TIMESTAMP
+from starlette.responses import JSONResponse
 
 from api.config import Config, DeliveryMethod
 from api.services.baldar_service import transform_woo_to_baldar, create_baldar_task, create_baldar_kamatra_task
@@ -66,7 +67,7 @@ async def handle_auth(data: WooAuthData, request: Request):
          description="Root endpoint with version status"
          )
 def home():
-    ver = 32
+    ver = 33
     return {"status": "ok", f"version {ver}": ver}
 
 
@@ -110,24 +111,29 @@ def create_task(
         raise HTTPException(status_code=500, detail=f"Failed to create task: {str(e)}")
 
 
-# Lior BOT:
-# Configure logging to ensure all data is logged to /var/log/nginx/access.log
+# Configure logging to output to the console and to Nginx logs
 logging.basicConfig(
-    filename='/var/log/nginx/access.log',
     level=logging.INFO,
-    format='%(asctime)s %(message)s',
+    format="Biton: %(asctime)s - %(levelname)s - %(message)s",
 )
 
-@app.route('/liorWaBot', methods=['GET', 'POST'])
-def lior_wa_bot():
-    if request.method == 'POST':
-        data = request.get_json() or request.data.decode('utf-8')
-        logging.info(f"POST Request: Headers: {dict(request.headers)}, Body: {data}")
-        print(f"POST Request: Headers: {dict(request.headers)}, Body: {data}")
-        return jsonify({"status": "POST received", "data": data})
 
-    if request.method == 'GET':
-        args = request.args
-        logging.info(f"GET Request: Headers: {dict(request.headers)}, Params: {args}")
-        print(f"GET Request: Headers: {dict(request.headers)}, Params: {args}")
-        return jsonify({"status": "GET received", "params": args})
+@app.api_route("/liorWaBot", methods=["GET", "POST"])
+async def lior_wa_bot(request: Request):
+    # Log request method and headers
+    logging.info(f"Request Method: {request.method}")
+    logging.info(f"Request Headers: {dict(request.headers)}")
+
+    if request.method == "POST":
+        body = await request.json()  # Get JSON body for POST request
+        logging.info(f"POST Request Body: {body}")
+        print(f"POST Request Body: {body}")
+        return JSONResponse({"status": "POST received", "data": body})
+
+    elif request.method == "GET":
+        query_params = dict(request.query_params)  # Get query parameters for GET request
+        logging.info(f"GET Request Query Params: {query_params}")
+        print(f"GET Request Query Params: {query_params}")
+        return JSONResponse({"status": "GET received", "params": query_params})
+
+    return JSONResponse({"error": "Invalid method"}, status_code=405)
