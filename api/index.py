@@ -8,7 +8,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 
-from google.cloud.firestore_v1 import SERVER_TIMESTAMP
+
 from api.config import Config, DeliveryMethod
 from api.services.baldar_service import transform_woo_to_baldar, create_baldar_task, create_baldar_kamatra_task
 from api.services.clean_url import sanitize_url
@@ -19,6 +19,8 @@ from firebase_admin import firestore, credentials
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from datetime import datetime
+
+from google.cloud.firestore_v1 import SERVER_TIMESTAMP
 import firebase_admin
 from firebase_admin import credentials
 
@@ -35,7 +37,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-cred = credentials.Certificate("./likutil-firebase-adminsdk-bbpdy-adb99de0cf.json")
+firestore_path = os.getenv("FIRESTORE_PATH")
+cred = credentials.Certificate(firestore_path)
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
@@ -49,7 +52,18 @@ async def handle_auth(data: WooAuthData, request: Request):
 
         # Reference to the user's document
         user_ref = db.collection("users").document(str(data.user_id))
-        user_doc = user_ref.get()
+        print('user_ref')
+        print(user_ref.id)
+
+        print('data.user_id')
+        print(data.user_id)
+        try:
+            user_doc = user_ref.get()
+        except Exception:
+            user_doc = None
+
+        print('user_doc')
+        print(user_doc)
 
         # Prepare the user data
         user_data = {
@@ -61,12 +75,15 @@ async def handle_auth(data: WooAuthData, request: Request):
             "key_permissions": data.key_permissions,
             "key_id": data.key_id,
         }
+        user_ref.set(user_data, merge=True)
 
         # Set `createdAt` only if it doesn't exist
         if not user_doc.exists or "createdAt" not in user_doc.to_dict():
             user_data["createdAt"] = SERVER_TIMESTAMP
 
         # Save to Firestore
+        print('FINAL user_data')
+        print(user_data)
         user_ref.set(user_data, merge=True)
 
         return {"status": "success", "message": "User data saved to Firestore"}
@@ -79,7 +96,7 @@ async def handle_auth(data: WooAuthData, request: Request):
          description="Root endpoint with version status"
          )
 def home():
-    ver = 36
+    ver = 38
     return {"status": "ok", f"version {ver}": ver}
 
 
