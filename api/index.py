@@ -158,11 +158,17 @@ async def handle_post(request: Request):
                 body.get("senderData", {}).get("chatId") == "120363360946946323@g.us"
         ):
             try:
+                print('SOPHY GROUP MESSAGE FOUND')
                 # Extract the user's message
                 user_message = body.get("messageData", {}).get("textMessageData", {}).get("textMessage", "")
 
                 # Create the response message
+                print('user_message')
+                print(user_message)
+                print('get_gpt_response')
                 answer = get_gpt_response(user_message)
+                print('answer')
+                print(answer)
 
                 # Send the message
                 url = "https://7103.api.greenapi.com/waInstance7103166851/sendMessage/39cd5f15b62b42ffa156d1fb589360b4df1d0ed7e56b49a4bf"
