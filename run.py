@@ -24,7 +24,6 @@
 # git pull && sudo systemctl restart fastapi && sudo tail -f /var/log/nginx/access.log
 
 
-
 import uvicorn
 from pip._internal.cli.cmdoptions import debug_mode
 
