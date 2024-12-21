@@ -97,6 +97,13 @@ def create_task(
 logging.basicConfig(level=logging.INFO, format='BITON %(asctime)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+@app.get("/getGptResp")
+async def handle_get_gpt_response(request: Request):
+    query_params = dict(request.query_params)
+    answer = get_gpt_response('מה צבע העיניים של ביבי?')
+    logger.info(f"GET request received with query params: {query_params}")
+    return JSONResponse(content={"status": "GET received", "data": answer})
+
 def get_gpt_response(user_message):
     response = client.chat.completions.create(
         model="gpt-4o-mini-2024-07-18",
@@ -124,7 +131,9 @@ def get_gpt_response(user_message):
         frequency_penalty=1.4,
         presence_penalty=0.98
     )
-    return response["choices"][0]["message"]["content"]
+    print('XXXXX')
+    print(response.choices[0].message.content)
+    return response.choices[0].message.content
 
 @app.get("/liorWaBot")
 async def handle_get(request: Request):
@@ -135,30 +144,31 @@ async def handle_get(request: Request):
 
 @app.post("/liorWaBot")
 async def handle_post(request: Request):
+    global answer
     body = await request.json()
+    # body = example_json # USE FOR DEBUG
+
     logger.info(f"POST request received with body: {body}")
 
     # Check conditions
     if (
-            body.get("typeWebhook") == "incomingMessageReceived" and
-            body.get("senderData", {}).get("chatId") == "120363360946946323@g.us"
+            (body.get("typeWebhook") == "incomingMessageReceived"
+             and body.get("senderData", {}).get("chatId") == "120363360946946323@g.us"
+            )
     ):
         # Extract the user's message
         user_message = body.get("messageData", {}).get("textMessageData", {}).get("textMessage", "")
 
         # Create the response message
 
-        response_message = get_gpt_response(user_message)
-
-
-
+        answer = get_gpt_response(user_message)
 
         # Send the message
         url = "https://7103.api.greenapi.com/waInstance7103166851/sendMessage/39cd5f15b62b42ffa156d1fb589360b4df1d0ed7e56b49a4bf"
 
         payload = {
             "chatId": "120363360946946323@g.us",
-            "message": response_message
+            "message": answer
         }
         headers = {
             'Content-Type': 'application/json'
@@ -166,6 +176,34 @@ async def handle_post(request: Request):
         response = requests.post(url, json=payload, headers=headers)
         logger.info(f"Message sent, response: {response.text}")
 
-    return JSONResponse(content={"status": "POST received", "data": body})
+    return JSONResponse(content={
+        "status": "POST received",
+        'gptAnswer' : answer,
+         "data": body
+    })
 
 
+# Example JSON input
+example_json = {
+  "typeWebhook": "incomingMessageReceived",
+  "instanceData": {
+    "idInstance": 7103166851,
+    "wid": "972584770076@c.us",
+    "typeInstance": "whatsapp"
+  },
+  "timestamp": 1734783026,
+  "idMessage": "3A8F71C92735202948BD",
+  "senderData": {
+    "chatId": "120363360946946323@g.us",
+    "chatName": "ליאורי🏹💕",
+    "sender": "972503219900@c.us",
+    "senderName": "ליאורי🏹💕",
+    "senderContactName": ""
+  },
+  "messageData": {
+    "typeMessage": "textMessage",
+    "textMessageData": {
+      "textMessage": "הייגירל"
+    }
+  }
+}
