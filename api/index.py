@@ -58,12 +58,8 @@ db = firestore.client()
 async def handle_auth(data: WooAuthData, request: Request):
     print('handle_auth')
     try:
-        print('full_req_url')
-        full_req_url = str(request.query_params['source'])
-        print(full_req_url)
-
         print('store_url')
-        store_url = sanitize_url(full_req_url)
+        store_url = str(request.query_params['source'])
         print(store_url)
 
         # Reference to the user's document
@@ -85,7 +81,6 @@ async def handle_auth(data: WooAuthData, request: Request):
         # Prepare the user data
         user_data = {
             "lastLogin": datetime.utcnow(),
-            "full_req_url" : full_req_url,
             "storeUrl": store_url,
             "consumerKey": data.consumer_key,
             "consumerSecret": data.consumer_secret,
