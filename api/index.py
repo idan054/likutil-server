@@ -62,7 +62,7 @@ async def handle_auth(data: WooAuthData, request: Request):
         store_url = sanitize_url(referer)
 
         # Reference to the user's document
-        user_ref = db.collection("users").document(str(data.user_id))
+        user_ref = db.collection("users").document(str(store_url))
         print('user_ref')
         print(user_ref.id)
 
