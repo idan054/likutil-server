@@ -62,14 +62,19 @@ async def handle_auth(data: WooAuthData, request: Request):
         store_url = str(request.query_params['source'])
         print(store_url)
 
-        # Reference to the user's document
-        print('user_ref')
-        user_ref = db.collection("users").document(str(store_url))
-        print(user_ref)
-        print(user_ref.id)
+        print('Checking for existing user document')
+        user_query = db.collection("users").where("storeUrl", "==", store_url).get()
 
-        print('data.user_id')
-        print(data.user_id)
+        if user_query:
+            # Document exists
+            user_ref = user_query[0].reference  # Reference to the first matching document
+            print(f"Existing user document found: {user_ref.id}")
+        else:
+            # No matching document, create a new one
+            user_ref = db.collection("users").document()
+            user_ref.set({"storeUrl": store_url, "other_field": "default_value"})
+            print(f"New user document created: {user_ref.id}")
+
         try:
             user_doc = user_ref.get()
         except Exception:
@@ -109,7 +114,7 @@ async def handle_auth(data: WooAuthData, request: Request):
          description="Root endpoint with version status"
          )
 def home():
-    ver = 39
+    ver = 40
     return {"status": "ok", f"version {ver}": ver}
 
 
