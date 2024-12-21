@@ -56,14 +56,21 @@ db = firestore.client()
 
 @app.post("/woo-auth-callback", summary="WooCommerce Auth Callback Handler")
 async def handle_auth(data: WooAuthData, request: Request):
+    print('handle_auth')
     try:
         # Extract store URL from the Referer header
+        print('full_req_url')
         full_req_url = str(request.url)
+        print(full_req_url)
+
+        print('store_url')
         store_url = sanitize_url(full_req_url)
+        print(store_url)
 
         # Reference to the user's document
-        user_ref = db.collection("users").document(str(store_url))
         print('user_ref')
+        user_ref = db.collection("users").document(str(store_url))
+        print(user_ref)
         print(user_ref.id)
 
         print('data.user_id')
