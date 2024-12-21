@@ -18,7 +18,7 @@ from openai import OpenAI
 
 
 app = FastAPI()
-client = OpenAI()
+client = OpenAI(api_key="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")
 
 # CORS Configuration
 app.add_middleware(
