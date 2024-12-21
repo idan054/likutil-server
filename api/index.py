@@ -67,7 +67,7 @@ async def handle_auth(data: WooAuthData, request: Request):
          description="Root endpoint with version status"
          )
 def home():
-    ver = 33
+    ver = 34
     return {"status": "ok", f"version {ver}": ver}
 
 
@@ -111,29 +111,21 @@ def create_task(
         raise HTTPException(status_code=500, detail=f"Failed to create task: {str(e)}")
 
 
-# Configure logging to output to the console and to Nginx logs
-logging.basicConfig(
-    level=logging.INFO,
-    format="Biton: %(asctime)s - %(levelname)s - %(message)s",
-)
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='BITON %(asctime)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+@app.get("/liorWaBot")
+async def handle_get(request: Request):
+    query_params = dict(request.query_params)
+    logger.info(f"GET request received with query params: {query_params}")
+    return JSONResponse(content={"status": "GET received", "data": query_params})
+
+@app.post("/liorWaBot")
+async def handle_post(request: Request):
+    body = await request.json()
+    logger.info(f"POST request received with body: {body}")
+    return JSONResponse(content={"status": "POST received", "data": body})
 
 
-@app.api_route("/liorWaBot", methods=["GET", "POST"])
-async def lior_wa_bot(request: Request):
-    # Log request method and headers
-    logging.info(f"Request Method: {request.method}")
-    logging.info(f"Request Headers: {dict(request.headers)}")
 
-    if request.method == "POST":
-        body = await request.json()  # Get JSON body for POST request
-        logging.info(f"POST Request Body: {body}")
-        print(f"POST Request Body: {body}")
-        return JSONResponse({"status": "POST received", "data": body})
-
-    elif request.method == "GET":
-        query_params = dict(request.query_params)  # Get query parameters for GET request
-        logging.info(f"GET Request Query Params: {query_params}")
-        print(f"GET Request Query Params: {query_params}")
-        return JSONResponse({"status": "GET received", "params": query_params})
-
-    return JSONResponse({"error": "Invalid method"}, status_code=405)
