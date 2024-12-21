@@ -58,14 +58,8 @@ db = firestore.client()
 async def handle_auth(data: WooAuthData, request: Request):
     print('handle_auth')
     try:
-        print('request.headers')
-        print(request.headers)
-        print('request.json()')
-        print(await request.json())
-
-        # Extract store URL from the Referer header
         print('full_req_url')
-        full_req_url = str(request.url)
+        full_req_url = str(request.query_params['source'])
         print(full_req_url)
 
         print('store_url')
