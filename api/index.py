@@ -37,9 +37,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-firestore_path = os.getenv("FIRESTORE_PATH")
-cred = credentials.Certificate(firestore_path)
-firebase_admin.initialize_app(cred)
+# Firebase configuration
+firebaseConfig = {
+    "apiKey": "AIzaSyDZ609tpVpSrWfOKVHVoyo9DK8dbYqAtRE",
+    "authDomain": "likutil.firebaseapp.com",
+    "projectId": "likutil",
+    "storageBucket": "likutil.firebasestorage.app",
+    "messagingSenderId": "314662541049",
+    "appId": "1:314662541049:web:9e6efa3430e1be4f47f428",
+    "measurementId": "G-VYRKS8Z4EX",
+}
+
+# Initialize Firebase Admin SDK using programmatic credentials
+cred = credentials.ApplicationDefault()
+firebase_admin.initialize_app(cred, {"projectId": firebaseConfig["projectId"]})
 db = firestore.client()
 
 
@@ -79,7 +90,7 @@ async def handle_auth(data: WooAuthData, request: Request):
 
         # Set `createdAt` only if it doesn't exist
         if not user_doc.exists or "createdAt" not in user_doc.to_dict():
-            user_data["createdAt"] = SERVER_TIMESTAMP
+            user_data["createdAt"] = datetime.utcnow()
 
         # Save to Firestore
         print('FINAL user_data')
@@ -96,7 +107,7 @@ async def handle_auth(data: WooAuthData, request: Request):
          description="Root endpoint with version status"
          )
 def home():
-    ver = 38
+    ver = 39
     return {"status": "ok", f"version {ver}": ver}
 
 
