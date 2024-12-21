@@ -1,74 +1,42 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
-from flask import Flask, request, jsonify
-import logging
-from google.cloud.firestore_v1 import SERVER_TIMESTAMP
-from starlette.responses import JSONResponse
-
 from api.config import Config, DeliveryMethod
 from api.services.baldar_service import transform_woo_to_baldar, create_baldar_task, create_baldar_kamatra_task
-from api.services.clean_url import sanitize_url
 from api.services.lionwheel_service import transform_woo_to_lionwheel, create_lionwheel_task
 from api.services.models import WooAuthData, EmailRequest, CreateDeliveryRequest
 from api.services.send_email import send_email
-import firebase_admin
-from firebase_admin import firestore, credentials
-from fastapi import FastAPI, HTTPException, Request
-from pydantic import BaseModel
-from datetime import datetime
 
 app = FastAPI()
 
-import firebase_admin
-from firebase_admin import credentials
+# CORS Configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-code1 = './likutil-firebase-adminsdk'
-code2 = '-bbpdy-adb99de0cf.json'
-cred = credentials.Certificate(f"{code1}{code2}")
-firebase_admin.initialize_app(cred)
-db = firestore.client()
-
-@app.post("/woo-auth-callback", summary="WooCommerce Auth Callback Handler")
-async def handle_auth(data: WooAuthData, request: Request):
-    try:
-        # Extract store URL from the Referer header
-        referer = request.headers.get("referer", "").strip()
-        store_url = sanitize_url(referer)
-
-        # Reference to the user's document
-        user_ref = db.collection("users").document(str(data.user_id))
-        user_doc = user_ref.get()
-
-        # Prepare the user data
-        user_data = {
-            "lastLogin": datetime.utcnow(),
-            "storeUrl": store_url,
-            "consumerKey": data.consumer_key,
-            "consumerSecret": data.consumer_secret,
-            "userId": data.user_id,
-            "key_permissions": data.key_permissions,
-            "key_id": data.key_id,
-        }
-
-        # Set `createdAt` only if it doesn't exist
-        if not user_doc.exists or "createdAt" not in user_doc.to_dict():
-            user_data["createdAt"] = SERVER_TIMESTAMP
-
-        # Save to Firestore
-        user_ref.set(user_data, merge=True)
-
-        return {"status": "success", "message": "User data saved to Firestore"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 # Root Endpoint
 @app.get("/", summary="API Version Checker",
          description="Root endpoint with version status"
          )
 def home():
-    ver = 34
+    ver = 31
     return {"status": "ok", f"version {ver}": ver}
+
+
+# Endpoint to handle WooCommerce callback
+@app.post("/woo-auth-callback", summary="WooCommerce Auth Callback Handler")
+async def handle_auth(data: WooAuthData):
+    # Log the received data
+    print("XXXX")
+    print("Received WooCommerce Auth Data:", data)
+
+    # Example response
+    return {"status": "success", "message": "Auth data received successfully"}
 
 
 @app.post("/api/send-email", summary="Send Email", description="Send an email to a specified recipient")
@@ -100,7 +68,7 @@ def create_task(
             return response
 
 
-        # All BALDAR: cargo, sale4u, sDeliveries, negevExpress
+            # THAN HANDLING BALDAR METHODS
         elif method in DeliveryMethod.__members__:
             baldar_data = transform_woo_to_baldar(woo_order_data, key)
             api_url = DeliveryMethod[method].value  # Access Needed host Based eNum Key & Value
@@ -111,21 +79,21 @@ def create_task(
         raise HTTPException(status_code=500, detail=f"Failed to create task: {str(e)}")
 
 
+
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='BITON %(asctime)s - %(message)s')
-logger = logging.getLogger(__name__)
-
-@app.get("/liorWaBot")
-async def handle_get(request: Request):
-    query_params = dict(request.query_params)
-    logger.info(f"GET request received with query params: {query_params}")
-    return JSONResponse(content={"status": "GET received", "data": query_params})
-
-@app.post("/liorWaBot")
-async def handle_post(request: Request):
-    body = await request.json()
-    logger.info(f"POST request received with body: {body}")
-    return JSONResponse(content={"status": "POST received", "data": body})
-
+# logging.basicConfig(level=logging.INFO, format='BITON %(asctime)s - %(message)s')
+# logger = logging.getLogger(__name__)
+#
+# @app.get("/liorWaBot")
+# async def handle_get(request: Request):
+#     query_params = dict(request.query_params)
+#     logger.info(f"GET request received with query params: {query_params}")
+#     return JSONResponse(content={"status": "GET received", "data": query_params})
+#
+# @app.post("/liorWaBot")
+# async def handle_post(request: Request):
+#     body = await request.json()
+#     logger.info(f"POST request received with body: {body}")
+#     return JSONResponse(content={"status": "POST received", "data": body})
 
 
