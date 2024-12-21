@@ -10,6 +10,11 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import logging
 import uvicorn
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+import requests
+import logging
+
 
 app = FastAPI()
 
@@ -94,10 +99,29 @@ async def handle_get(request: Request):
     logger.info(f"GET request received with query params: {query_params}")
     return JSONResponse(content={"status": "GET received", "data": query_params})
 
+
 @app.post("/liorWaBot")
 async def handle_post(request: Request):
     body = await request.json()
     logger.info(f"POST request received with body: {body}")
+
+    # Check conditions
+    if (
+            body.get("typeWebhook") == "incomingMessageReceived" and
+            body.get("senderData", {}).get("chatId") == "972503219900@c.us"
+    ):
+        # Send the message
+        url = "https://7103.api.greenapi.com/waInstance7103154645/sendMessage/625b05dd2a5a4301a53550e8bdbd51810336b4be984c491c96"
+        payload = {
+            "chatId": "972503219900@c.us",
+            "message": "PLACE_HOLDER"
+        }
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        response = requests.post(url, json=payload, headers=headers)
+        logger.info(f"Message sent, response: {response.text}")
+
     return JSONResponse(content={"status": "POST received", "data": body})
 
 
