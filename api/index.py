@@ -154,7 +154,7 @@ async def handle_post(request: Request):
 
         # Check conditions
         if (
-                body.get("typeWebhook") == "incomingMessageReceived" and
+                # body.get("typeWebhook") == "incomingMessageReceived" and
                 body.get("senderData", {}).get("chatId") == "120363360946946323@g.us"
         ):
             try:
