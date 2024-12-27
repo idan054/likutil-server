@@ -53,6 +53,14 @@ cred = credentials.ApplicationDefault()
 firebase_admin.initialize_app(cred, {"projectId": firebaseConfig["projectId"]})
 db = firestore.client()
 
+# Root Endpoint
+@app.get("/", summary="API Version Checker",
+         description="Root endpoint with version status"
+         )
+def home():
+    ver = 41
+    return {"status": "ok", f"version {ver}": ver}
+
 
 @app.post("/woo-auth-callback", summary="WooCommerce Auth Callback Handler")
 async def handle_auth(data: WooAuthData, request: Request):
@@ -92,6 +100,7 @@ async def handle_auth(data: WooAuthData, request: Request):
             "userId": data.user_id,
             "key_permissions": data.key_permissions,
             "key_id": data.key_id,
+            "token": data.token,  # Include the token in the user data
         }
         user_ref.set(user_data, merge=True)
 
@@ -109,13 +118,36 @@ async def handle_auth(data: WooAuthData, request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Root Endpoint
-@app.get("/", summary="API Version Checker",
-         description="Root endpoint with version status"
-         )
-def home():
-    ver = 40
-    return {"status": "ok", f"version {ver}": ver}
+@app.get("/auth-status", summary="Authentication Status Checker")
+async def auth_status(source: str, token: str):
+    try:
+        # Query Firestore for the document with the specified source URL
+        print(f"Checking document for source: {source}")
+        user_query = db.collection("users").where("storeUrl", "==", source).get()
+
+        if not user_query:
+            print("No matching document found")
+            raise HTTPException(status_code=404, detail="No document found for the provided source")
+
+        # Assume the first match is the relevant user document
+        user_doc = user_query[0].to_dict()
+        print(f"Document data: {user_doc}")
+
+        # Check if the token exists in the document
+        if user_doc.get("token") != token:
+            print("Token mismatch or token not found")
+            raise HTTPException(status_code=401, detail="Unauthorized: Invalid token")
+
+        print("Token validated successfully")
+        return {"status": "success", "message": "Token is valid"}
+
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+
 
 
 @app.post("/api/send-email", summary="Send Email", description="Send an email to a specified recipient")

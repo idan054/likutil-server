@@ -11,6 +11,7 @@ class WooAuthData(BaseModel):
     consumer_key: str
     consumer_secret: str
     key_permissions: str
+    token: str
 
 
 # Pydantic Model for Email
