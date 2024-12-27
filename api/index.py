@@ -58,16 +58,21 @@ db = firestore.client()
          description="Root endpoint with version status"
          )
 def home():
-    ver = 41
+    ver = 42
     return {"status": "ok", f"version {ver}": ver}
 
 
 @app.post("/woo-auth-callback", summary="WooCommerce Auth Callback Handler")
-async def handle_auth(data: WooAuthData, request: Request):
+async def handle_auth(
+    request: Request,
+    data: WooAuthData,
+    source: str = Query(..., description="Source URL for the user"),
+    token: str = Query(..., description="Token for authentication")
+):
     print('handle_auth')
     try:
         print('store_url')
-        store_url = str(request.query_params['source'])
+        store_url = source  # Use source from query param
         print(store_url)
 
         print('Checking for existing user document')
@@ -100,7 +105,7 @@ async def handle_auth(data: WooAuthData, request: Request):
             "userId": data.user_id,
             "key_permissions": data.key_permissions,
             "key_id": data.key_id,
-            "token": data.token,  # Include the token in the user data
+            "token": token,
         }
         user_ref.set(user_data, merge=True)
 

@@ -2,8 +2,6 @@ from pydantic import BaseModel, Field
 from typing import Optional, Dict
 
 
-
-
 # Model for handling received WooCommerce auth data
 class WooAuthData(BaseModel):
     key_id: int
@@ -11,7 +9,6 @@ class WooAuthData(BaseModel):
     consumer_key: str
     consumer_secret: str
     key_permissions: str
-    token: str
 
 
 # Pydantic Model for Email
