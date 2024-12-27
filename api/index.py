@@ -144,7 +144,16 @@ async def auth_status(source: str, token: str):
             raise HTTPException(status_code=401, detail="Unauthorized: Invalid token")
 
         print("Token validated successfully")
-        return {"status": "success", "message": "Token is valid"}
+        # Retrieve email if available
+        email = user_doc.get("email", "Not provided")
+
+        return {
+            "status": "success",
+            "message": "Token is valid",
+            "email": email,
+            "password": 'Likutil-Pass-2003'
+        }
+
 
     except Exception as e:
         print(f"Error occurred: {e}")
