@@ -58,7 +58,7 @@ db = firestore.client()
          description="Root endpoint with version status"
          )
 def home():
-    ver = 42
+    ver = 43
     return {"status": "ok", f"version {ver}": ver}
 
 
@@ -160,7 +160,28 @@ async def auth_status(source: str, token: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/get-user-details", summary="Get User Details")
+async def get_user_details(
+        email: str = Query(..., description="User Email of the user")
+):
+    try:
+        # Query Firestore for the document with the specified email
+        print(f"Fetching user document for email: {email}")
+        user_query = db.collection("users").where("email", "==", email).get()
 
+        if not user_query:
+            print("No matching document found")
+            raise HTTPException(status_code=404, detail="No document found for the provided email")
+
+        # Assume the first match is the relevant user document
+        user_doc = user_query[0].to_dict()
+        print(f"Document data: {user_doc}")
+
+        return user_doc  # Return all fields in the document
+
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 
