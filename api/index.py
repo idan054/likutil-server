@@ -364,37 +364,52 @@ example_json = {
 }
 
 
-@app.api_route("/proxy", methods=["GET", "POST"])
-async def universal_proxy(
-        request: Request,
-        body: Optional[RequestBodyModel] = None,  # Add a field to handle POST/PUT request bodies
-        encoded_url: str = Query(..., description="The fully encoded URL of the external API"),
+from typing import Optional
+import requests
+from fastapi import FastAPI, Request, HTTPException, Query
+from fastapi.responses import JSONResponse
 
+app = FastAPI()
+
+# Shared function for making the external request
+def make_request_to_external_api(
+    method: str,
+    encoded_url: str,
+    headers: dict,
+    body: Optional[bytes] = None
 ):
     try:
-        # Extract method and request data
-        method = request.method
-        headers = dict(request.headers)
-        # Handle request body only for specific methods
-        if method in ["POST", "PUT", "PATCH"]:
-            body = await request.body()
-        else:
-            body = None
-
         # Make the request to the external API
         response = requests.request(
             method=method,
-            url=encoded_url,  # Pass the full URL directly
+            url=encoded_url,
             headers=headers,
-            data=body if body else None  # Pass body only when available
+            data=body
         )
 
-        # Return the exact response from the external API
+        # Return the response
         return JSONResponse(
             status_code=response.status_code,
             content=response.json() if response.content else None
         )
-
     except Exception as e:
         print(f"Error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/proxy")
+async def proxy_get(
+    request: Request,
+    encoded_url: str = Query(..., description="The fully encoded URL of the external API"),
+):
+    headers = dict(request.headers)
+    return make_request_to_external_api("GET", encoded_url, headers)
+
+@app.post("/proxy")
+async def proxy_post(
+    request: Request,
+    encoded_url: str = Query(..., description="The fully encoded URL of the external API"),
+):
+    headers = dict(request.headers)
+    body = await request.body()  # Read the body for POST requests
+    return make_request_to_external_api("POST", encoded_url, headers, body)
+
