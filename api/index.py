@@ -375,14 +375,18 @@ async def universal_proxy(
         # Extract method and request data
         method = request.method
         headers = dict(request.headers)
-        body = await request.body()
+        # Handle request body only for specific methods
+        if method in ["POST", "PUT", "PATCH"]:
+            body = await request.body()
+        else:
+            body = None
 
         # Make the request to the external API
         response = requests.request(
             method=method,
             url=encoded_url,  # Pass the full URL directly
             headers=headers,
-            data=body
+            data=body if body else None  # Pass body only when available
         )
 
         # Return the exact response from the external API
