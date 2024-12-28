@@ -374,17 +374,10 @@ def make_request_to_external_api(
 
         # Decode the URL
         decoded_url = unquote(encoded_url)
-        print('method')
-        print(method)
-
-        print('decoded_url')
-        print(decoded_url)
-
-        print('headers')
-        print(headers)
-
-        print('body')
-        print(body)
+        print(f"Decoded URL: {decoded_url}")
+        print(f"Method: {method}")
+        print(f"Headers: {headers}")
+        print(f"Body: {body}")
 
         # Make the request to the external API
         response = requests.request(
@@ -394,11 +387,21 @@ def make_request_to_external_api(
             data=body
         )
 
+        # Log response details
+        print(f"Response Status Code: {response.status_code}")
+        print(f"Response Headers: {response.headers}")
+        print(f"Response Content: {response.text}")
+
+        # Try to parse the response as JSON, fallback to text if not JSON
+        try:
+            content = response.json()
+        except ValueError:
+            content = response.text  # Fallback to raw text
 
         # Return the response
         return JSONResponse(
             status_code=response.status_code,
-            content=response.json() if response.content else None
+            content=content
         )
     except Exception as e:
         print(f"Error occurred: {e}")
