@@ -374,6 +374,17 @@ def make_request_to_external_api(
 
         # Decode the URL
         decoded_url = unquote(encoded_url)
+        print('method')
+        print(method)
+
+        print('decoded_url')
+        print(decoded_url)
+
+        print('headers')
+        print(headers)
+
+        print('body')
+        print(body)
 
         # Make the request to the external API
         response = requests.request(
