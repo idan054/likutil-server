@@ -364,7 +364,7 @@ example_json = {
 }
 
 
-@app.api_route("/proxy", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+@app.api_route("/proxy", methods=["GET", "POST"])
 async def universal_proxy(
         request: Request,
         body: Optional[RequestBodyModel] = None,  # Add a field to handle POST/PUT request bodies
