@@ -363,14 +363,6 @@ example_json = {
     }
 }
 
-
-from typing import Optional
-import requests
-from fastapi import FastAPI, Request, HTTPException, Query
-from fastapi.responses import JSONResponse
-
-app = FastAPI()
-
 # Shared function for making the external request
 def make_request_to_external_api(
     method: str,
