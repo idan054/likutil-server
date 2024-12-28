@@ -379,6 +379,10 @@ def make_request_to_external_api(
         print(f"Headers: {headers}")
         print(f"Body: {body}")
 
+        headers = {
+            'Authorization': 'Basic Y2tfMDVmNjA0NmM1MjEwODQ4NmViODY5YTM3Nzc4NGJhNTBkM2E2ZWJmNjpjc19mZjdhZjk0NzRiNTY5ZjY3ZmJkMjRlNDhjZjQyMjY3NTFjZDA1MTMz'
+        }
+
         # Make the request to the external API
         response = requests.request(
             method=method,
@@ -392,18 +396,6 @@ def make_request_to_external_api(
         print(f"Response Headers: {response.headers}")
         print(f"Response Content: {response.text}")
 
-        print(f"TEST!")
-
-        url = "https://spider3d.co.il/wp-json/wc/v3/orders/69967?status=pending&_fields=shipping_lines,id"
-
-        payload = {}
-        headers = {
-            'Authorization': 'Basic Y2tfMDVmNjA0NmM1MjEwODQ4NmViODY5YTM3Nzc4NGJhNTBkM2E2ZWJmNjpjc19mZjdhZjk0NzRiNTY5ZjY3ZmJkMjRlNDhjZjQyMjY3NTFjZDA1MTMz'
-        }
-
-        response = requests.request("GET", url, headers=headers, data=payload)
-
-        print(response.text)
 
         # Try to parse the response as JSON, fallback to text if not JSON
         try:
