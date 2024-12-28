@@ -8,12 +8,11 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 
-
 from api.config import Config, DeliveryMethod
 from api.services.baldar_service import transform_woo_to_baldar, create_baldar_task, create_baldar_kamatra_task
 from api.services.clean_url import sanitize_url
 from api.services.lionwheel_service import transform_woo_to_lionwheel, create_lionwheel_task
-from api.services.models import WooAuthData, EmailRequest, CreateDeliveryRequest
+from api.services.models import WooAuthData, EmailRequest, CreateDeliveryRequest, RequestBodyModel
 from api.services.send_email import send_email
 from firebase_admin import firestore, credentials
 from fastapi import FastAPI, HTTPException, Request
@@ -53,6 +52,7 @@ cred = credentials.ApplicationDefault()
 firebase_admin.initialize_app(cred, {"projectId": firebaseConfig["projectId"]})
 db = firestore.client()
 
+
 # Root Endpoint
 @app.get("/", summary="API Version Checker",
          description="Root endpoint with version status"
@@ -64,10 +64,10 @@ def home():
 
 @app.post("/woo-auth-callback", summary="WooCommerce Auth Callback Handler")
 async def handle_auth(
-    request: Request,
-    data: WooAuthData,
-    source: str = Query(..., description="Source URL for the user"),
-    token: str = Query(..., description="Token for authentication")
+        request: Request,
+        data: WooAuthData,
+        source: str = Query(..., description="Source URL for the user"),
+        token: str = Query(..., description="Token for authentication")
 ):
     print('handle_auth')
     try:
@@ -366,14 +366,16 @@ example_json = {
 
 @app.api_route("/proxy", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
 async def universal_proxy(
-    request: Request,
-    encoded_url: str = Query(..., description="The fully encoded URL of the external API"),
+        request: Request,
+        body: Optional[RequestBodyModel] = None,  # Add a field to handle POST/PUT request bodies
+        encoded_url: str = Query(..., description="The fully encoded URL of the external API"),
+
 ):
     try:
         # Extract method and request data
         method = request.method
         headers = dict(request.headers)
-        body = await request.body()
+        body = body.dict().get("data") if body else await request.body()
 
         # Make the request to the external API
         response = requests.request(

@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Dict
+from pydantic import BaseModel
+from typing import Optional, Dict, Any
 
 
 # Model for handling received WooCommerce auth data
@@ -50,3 +51,8 @@ class CreateDeliveryRequest(BaseModel):
             "address": "ויצמן 91"
         }
     )
+
+
+# Define a generic model for request bodies
+class RequestBodyModel(BaseModel):
+    data: Optional[Dict[str, Any]] = None
