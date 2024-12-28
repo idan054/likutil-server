@@ -15,9 +15,10 @@ from pip._internal.cli.cmdoptions import debug_mode
 # sudo systemctl restart fastapi
 # sudo systemctl daemon-reload
 
-# VIEW:
 # sudo systemctl start fastapi
 # sudo systemctl stop fastapi
+
+# VIEW:
 # sudo systemctl status fastapi
 # sudo tail -f /var/log/nginx/access.log
 # sudo tail -f /var/log/nginx/error.log
