@@ -58,7 +58,7 @@ db = firestore.client()
          description="Root endpoint with version status"
          )
 def home():
-    ver = 43
+    ver = 44
     return {"status": "ok", f"version {ver}": ver}
 
 
@@ -184,6 +184,34 @@ async def get_user_details(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.api_route("/proxy", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+async def universal_proxy(
+    request: Request,
+    encoded_url: str = Query(..., description="The fully encoded URL of the external API"),
+):
+    try:
+        # Extract method and request data
+        method = request.method
+        headers = dict(request.headers)
+        body = await request.body()
+
+        # Make the request to the external API
+        response = requests.request(
+            method=method,
+            url=encoded_url,  # Pass the full URL directly
+            headers=headers,
+            data=body
+        )
+
+        # Return the exact response from the external API
+        return JSONResponse(
+            status_code=response.status_code,
+            content=response.json() if response.content else None
+        )
+
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/send-email", summary="Send Email", description="Send an email to a specified recipient")
 def send_email_endpoint(email_request: EmailRequest):
