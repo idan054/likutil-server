@@ -375,7 +375,7 @@ async def universal_proxy(
         # Extract method and request data
         method = request.method
         headers = dict(request.headers)
-        body = body.dict().get("data") if body else await request.body()
+        body = await request.body()
 
         # Make the request to the external API
         response = requests.request(
