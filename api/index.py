@@ -3,7 +3,7 @@ import requests
 import logging
 from openai import OpenAI
 import os
-
+from urllib.parse import unquote  # Import for decoding URLs
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
@@ -371,13 +371,18 @@ def make_request_to_external_api(
     body: Optional[bytes] = None
 ):
     try:
+
+        # Decode the URL
+        decoded_url = unquote(encoded_url)
+
         # Make the request to the external API
         response = requests.request(
             method=method,
-            url=encoded_url,
+            url=decoded_url,  # Use the decoded URL
             headers=headers,
             data=body
         )
+
 
         # Return the response
         return JSONResponse(
