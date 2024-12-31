@@ -58,7 +58,7 @@ db = firestore.client()
          description="Root endpoint with version status"
          )
 def home():
-    ver = 44
+    ver = 45
     return {"status": "ok", f"version {ver}": ver}
 
 
